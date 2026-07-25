@@ -53,7 +53,7 @@ def on_ready():
 def get_db():
     db = MySQLdb.connect(
         host="localhost",
-        user="jidelna",
+        user="ubuntu",
         database="scratch"
     )
     return db
