@@ -1,9 +1,11 @@
 import threading,MySQLdb
-
+path = "/home/ubuntu/password.txt"
 def get_db():
+    password = open(path,"r").strip()
     db = MySQLdb.connect(
         host="localhost",
         user="scratch",
+        passwd=password,
         database="scratch"
     )
     return db

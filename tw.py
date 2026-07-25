@@ -12,6 +12,8 @@ notifications = "/home/ubuntu/scratch/info/notifications.txt"
 logs = "/home/ubuntu/scratch/info/logs.txt"
 allowsend = "/home/ubuntu/scratch/info/allowsend.txt"
 
+path = "/home/ubuntu/password.txt"
+
 
 #session = sa.login_by_id(str(open('sid','r').read()).replace('\n',''), username="SAMURAI228")
 cloud = sa.get_tw_cloud("1319788189")
@@ -51,9 +53,11 @@ def on_ready():
 
 
 def get_db():
+    password = open(path,"r").strip()
     db = MySQLdb.connect(
         host="localhost",
         user="scratch",
+        passwd=password,
         database="scratch"
     )
     return db
