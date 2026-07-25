@@ -53,7 +53,7 @@ def on_ready():
 
 
 def get_db():
-    password = open(path,"r").strip()
+    password = open(path,"r").read().strip()
     db = MySQLdb.connect(
         host="localhost",
         user="scratch",
