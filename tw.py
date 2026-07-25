@@ -1,6 +1,5 @@
 import scratchattach as sa
-import threading
-import time
+import threading,MySQLdb
 from time import strftime
 from random import randint
 
@@ -12,6 +11,7 @@ remixes = "/home/ubuntu/scratch/info/remixes.txt"
 notifications = "/home/ubuntu/scratch/info/notifications.txt"
 logs = "/home/ubuntu/scratch/info/logs.txt"
 allowsend = "/home/ubuntu/scratch/info/allowsend.txt"
+
 
 #session = sa.login_by_id(str(open('sid','r').read()).replace('\n',''), username="SAMURAI228")
 cloud = sa.get_tw_cloud("1319788189")
@@ -37,8 +37,25 @@ def verify(username):
    print (f"verificator;   {username}    ;   {verificator.check()}")
    return verificator.check()
 
+@client.request
+def get_balance(username):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT balance from balances where username = %s;",(username,))
+    balance = cursor.fetchall()
+    return balance
+
 @client.event
 def on_ready():
     print("Request handler is running")
+
+
+def get_db():
+    db = MySQLdb.connect(
+        host="localhost",
+        user="jidelna",
+        database="scratch"
+    )
+    return db
 
 client.start(thread=True) # thread=True is an optional argument. It makes the cloud requests handler run in a thread
