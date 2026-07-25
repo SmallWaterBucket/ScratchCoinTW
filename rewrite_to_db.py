@@ -3,7 +3,7 @@ import threading,MySQLdb
 def get_db():
     db = MySQLdb.connect(
         host="localhost",
-        user="ubuntu",
+        user="scratch",
         database="scratch"
     )
     return db
