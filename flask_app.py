@@ -1,6 +1,9 @@
 from flask import Flask
+import random
 
 import random
+
+app = Flask(__name__)
 
 def is_prime(n, k=20):
     if n < 2:
