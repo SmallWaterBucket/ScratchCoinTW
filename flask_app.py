@@ -54,5 +54,5 @@ def generate_prime(digits):
 def main(length):
     primes = []
     for i in range(100):
-        primes.append(generate_prime(int(length)))
-    return ','.join(primes)
+        primes.append(str(generate_prime(int(length))))
+    return str(','.join(primes))
