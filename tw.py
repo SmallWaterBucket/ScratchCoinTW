@@ -29,7 +29,7 @@ def ping(): #called when client receives request
 @client.request
 def get_verificator_code(username):
    user = sa.get_user(username)
-   verificator = user.verify_identity(verification_project_id = 1319788189) # The project id where the user has to comment can be specified as `verification_project_id` keyword argument 
+   verificator = user.verify_identity(verification_project_id = 1364481229) # The project id where the user has to comment can be specified as `verification_project_id` keyword argument 
    verificators[username] = verificator
    return verificator.code
 
@@ -37,6 +37,8 @@ def get_verificator_code(username):
 def verify(username):
    verificator = verificators[username]
    print (f"verificator;   {username}    ;   {verificator.check()}")
+   if verificator.check():
+       verificators.remove(username)
    return verificator.check()
 
 @client.request
@@ -45,7 +47,16 @@ def get_balance(username):
     cursor = db.cursor()
     cursor.execute("SELECT balance from balances where username = %s;",(username,))
     balance = cursor.fetchall()
+    if not cursor.fetchall() or len(cursor.fetchall()) == 0:
+        create_user(username)
     return balance
+
+
+
+def create_user(username):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("INSERT INTO balances (username, balance, read_notifications, accepted) values (%s, 100,0,1);", (username,))
 
 @client.event
 def on_ready():
