@@ -49,7 +49,9 @@ def authenticate(username, prime1, prime2, next_product):
         prime1 = int(prime1)
         prime2 = int(prime2)
         product = prime1 * prime2
-        if product == comment:
+        print(str(product))
+        print(str(comment))
+        if int(product) == int(comment):
             expires_at = int(time.time()) + 10 * 60 #adds ten minures
             verificators[username] = Verificator(next_product, expires_at)
             print("Authenticated")
