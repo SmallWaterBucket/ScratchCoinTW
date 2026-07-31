@@ -52,8 +52,9 @@ def authenticate(username, prime1, prime2, next_product):
         if product == comment:
             expires_at = int(time.time()) + 10 * 60 #adds ten minures
             verificators[username] = Verificator(next_product, expires_at)
+            print("Authenticated")
             return "Authenticated"
-
+    print("Failed")
     return "Failed"
 
 @client.request
