@@ -46,6 +46,8 @@ def authenticate(username, prime1, prime2, next_product):
         comment = comment.content
         print(prime1)
         print(prime2)
+        prime1 = int(prime1)
+        prime2 = int(prime2)
         product = prime1 * prime2
         if product == comment:
             expires_at = int(time.time()) + 10 * 60 #adds ten minures
@@ -60,6 +62,8 @@ def test(username, prime1, prime2, next_product):
 
 def verify_user(username,prime1,prime2,next_product):
     verificator = verificators[username]
+    prime1 = int(prime1)
+    prime2 = int(prime2)
     current_product = prime1 * prime2
     if verificator.expires_at > time.time():
         verificators.remove()
