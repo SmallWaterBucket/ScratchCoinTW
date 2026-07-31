@@ -38,12 +38,14 @@ def authenticate(username, prime1, prime2, next_product):
     comments = project.comments(limit=100)
     comment = ""
     for loop_comment in comments:
-        if loop_comment.author.lower() == username.lower():
+        if loop_comment.author_name.lower() == username.lower():
             comment = loop_comment
             break
 
     if comment:
         comment = comment.content
+        print(prime1)
+        print(prime2)
         product = prime1 * prime2
         if product == comment:
             expires_at = int(time.time()) + 10 * 60 #adds ten minures
