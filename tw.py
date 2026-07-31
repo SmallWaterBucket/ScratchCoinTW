@@ -1,7 +1,8 @@
 import scratchattach as sa
-import threading,MySQLdb
+import threading,MySQLdb,time
 from time import strftime
 from random import randint
+from dataclasses import dataclass
 
 balancespath = "/home/ubuntu/scratch/info/balances.txt"
 chargespath = "/home/ubuntu/scratch/info/charges.txt"
@@ -16,30 +17,61 @@ path = "/home/ubuntu/password.txt"
 
 
 #session = sa.login_by_id(str(open('sid','r').read()).replace('\n',''), username="SAMURAI228")
-cloud = sa.get_tw_cloud("1319788189")
+cloud = sa.get_tw_cloud("1365548096")
 client = cloud.requests()
 verificators = {
 "a":"b"
 }
+project = sa.get_project("1365548096")
+
+@dataclass
+class Verificator:
+    next_product: int
+    expires_at: int
 
 @client.request
 def ping(): #called when client receives request
     return "pong" #sends back 'pong' to the Scratch project
 
 @client.request
-def get_verificator_code(username):
-   user = sa.get_user(username)
-   verificator = user.verify_identity(verification_project_id = 1364481229) # The project id where the user has to comment can be specified as `verification_project_id` keyword argument 
-   verificators[username] = verificator
-   return verificator.code
+def authenticate(username, prime1, prime2, next_product):
+    comments = project.comments(limit=100)
+    comment = ""
+    for loop_comment in comments:
+        if loop_comment.author.lower() == username.lower():
+            comment = loop_comment
+            break
+
+    if comment:
+        comment = comment.content
+        product = prime1 * prime2
+        if product == comment:
+            expires_at = int(time.time()) + 10 * 60 #adds ten minures
+            verificators[username] = Verificator(next_product, expires_at)
+            return "Authenticated"
+
+    return "Failed"
 
 @client.request
-def verify(username):
-   verificator = verificators[username]
-   print (f"verificator;   {username}    ;   {verificator.check()}")
-   if verificator.check():
-       verificators.remove(username)
-   return verificator.check()
+def test(username, prime1, prime2, next_product):
+    verify_user(username, prime1, prime2, next_product)
+
+def verify_user(username,prime1,prime2,next_product):
+    verificator = verificators[username]
+    current_product = prime1 * prime2
+    if verificator.expires_at > time.time():
+        verificators.remove()
+        return "Expired"
+    if current_product == verificator.next_product:
+        expires_at = int(time.time()) + 10 * 60 #adds ten minures
+        verificators[username] = Verificator(next_product, expires_at)
+        return "Authenticated"
+    else:
+        return "Failed"
+
+    
+    
+
 
 @client.request
 def get_balance(username):
