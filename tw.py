@@ -72,10 +72,12 @@ def verify_user(username,prime1,prime2,next_product):
     prime1 = int(prime1)
     prime2 = int(prime2)
     current_product = prime1 * prime2
+    print(next_product)
+    print(current_product)
     if verificator.expires_at < time.time():
         verificators.pop(username)
         return "Expired"
-    if current_product == verificator.next_product:
+    if int(current_product) == int(verificator.next_product):
         expires_at = int(time.time()) + 10 * 60 #adds ten minures
         verificators[username] = Verificator(next_product, expires_at)
         print(f"[{get_time()}] Verified user {username}")
