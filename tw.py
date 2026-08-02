@@ -59,9 +59,9 @@ def authenticate(username, prime1, prime2, next_product):
 @client.request
 def test(username, prime1, prime2, next_product, text): #username, prime1, prime2, next_product should always be the first 4 arguments in a verified function
     # this code should be used for functions where you need to verify the user's identity after the initial authentication
-    verify_user = verify_user(username, prime1, prime2, next_product)
-    if verify_user != "Verified":
-        return verify_user
+    status = verify_user(username, prime1, prime2, next_product)
+    if status != "Verified":
+        return status
     # your code here
     return text #this is just a small example. This function just returns whatever you put as text
     
@@ -73,7 +73,7 @@ def verify_user(username,prime1,prime2,next_product):
     prime2 = int(prime2)
     current_product = prime1 * prime2
     if verificator.expires_at < time.time():
-        verificators.pop(verificator)
+        verificators.pop(username)
         return "Expired"
     if current_product == verificator.next_product:
         expires_at = int(time.time()) + 10 * 60 #adds ten minures
