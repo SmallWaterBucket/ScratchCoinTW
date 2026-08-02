@@ -1,5 +1,6 @@
 import scratchattach as sa
 import threading,MySQLdb,time
+from datetime import datetime
 from time import strftime
 from random import randint
 from dataclasses import dataclass
@@ -44,19 +45,15 @@ def authenticate(username, prime1, prime2, next_product):
 
     if comment:
         comment = comment.content
-        print(prime1)
-        print(prime2)
         prime1 = int(prime1)
         prime2 = int(prime2)
         product = prime1 * prime2
-        print(str(product))
-        print(str(comment))
         if int(product) == int(comment):
             expires_at = int(time.time()) + 10 * 60 #adds ten minures
             verificators[username] = Verificator(next_product, expires_at)
-            print("Authenticated")
+            print(f"[{get_time()}] Authenticated user {username}")
             return "Authenticated"
-    print("Failed")
+    print(f"[{get_time()}] Failed to authenticate user {username}")
     return "Failed"
 
 @client.request
@@ -75,17 +72,19 @@ def verify_user(username,prime1,prime2,next_product):
     prime1 = int(prime1)
     prime2 = int(prime2)
     current_product = prime1 * prime2
-    if verificator.expires_at > time.time():
-        verificators.remove()
+    if verificator.expires_at < time.time():
+        verificators.pop(verificator)
         return "Expired"
     if current_product == verificator.next_product:
         expires_at = int(time.time()) + 10 * 60 #adds ten minures
         verificators[username] = Verificator(next_product, expires_at)
+        print(f"[{get_time()}] Verified user {username}")
         return "Verified"
     else:
         return "Failed"
 
-    
+def get_time():
+    return str(datetime.now().strftime("%B %d, %Y  %H:%M:%S"))
     
 
 
@@ -95,7 +94,7 @@ def get_balance(username):
     cursor = db.cursor()
     cursor.execute("SELECT balance from balances where username = %s;",(username,))
     balance = cursor.fetchall()
-    if not cursor.fetchall() or len(cursor.fetchall()) == 0:
+    if not balance or len(balance) == 0:
         create_user(username)
     return balance
 
