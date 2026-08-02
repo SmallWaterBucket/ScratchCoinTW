@@ -82,8 +82,8 @@ def verify_user(username,prime1,prime2,next_product, function_name):
 
 @client.request
 @verified_request
-def test(username, prime1, prime2, next_product, text): #username, prime1, prime2, next_product should always be present to be able to authenticate
-    return text
+def test(username, text): #username, prime1, prime2, next_product should always be present to be able to authenticate
+    return str(text) + str(username)
 
 
 def get_time():
