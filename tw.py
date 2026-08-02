@@ -20,9 +20,7 @@ path = "/home/ubuntu/password.txt"
 #session = sa.login_by_id(str(open('sid','r').read()).replace('\n',''), username="SAMURAI228")
 cloud = sa.get_tw_cloud("1365548096")
 client = cloud.requests()
-verificators = {
-"a":"b"
-}
+verificators = {}
 project = sa.get_project("1365548096")
 
 @dataclass
@@ -50,7 +48,7 @@ def authenticate(username, prime1, prime2, next_product):
         product = prime1 * prime2
         if int(product) == int(comment):
             expires_at = int(time.time()) + 10 * 60 #adds ten minures
-            verificators[username] = Verificator(next_product, expires_at)
+            verificators[username] = Verificator(int(next_product), expires_at)
             print(f"[{get_time()}] Authenticated user {username}")
             return "Authenticated"
     print(f"[{get_time()}] Failed to authenticate user {username}")
@@ -74,10 +72,10 @@ def verify_user(username,prime1,prime2,next_product):
     current_product = prime1 * prime2
     for value in verificators.values():
         print(f"Next product: {value.next_product}")
-        
+
     print(next_product)
     print(str(verificator.next_product))
-    if verificator.expires_at < time.time():
+    if verificator.expires_at < int(time.time()):
         verificators.pop(username)
         print(f"[{get_time()}] Verificator for user {username} expired")
         return "Expired"
@@ -111,6 +109,7 @@ def create_user(username):
     db = get_db()
     cursor = db.cursor()
     cursor.execute("INSERT INTO balances (username, balance, read_notifications, accepted) values (%s, 100,0,1);", (username,))
+    db.commit()
 
 @client.event
 def on_ready():
