@@ -4,15 +4,7 @@ from datetime import datetime
 from time import strftime
 from random import randint
 from dataclasses import dataclass
-
-balancespath = "/home/ubuntu/scratch/info/balances.txt"
-chargespath = "/home/ubuntu/scratch/info/charges.txt"
-blockedpath = "/home/ubuntu/scratch/info/blocked.txt"
-reports = "/home/ubuntu/scratch/info/reports.txt"
-remixes = "/home/ubuntu/scratch/info/remixes.txt"
-notifications = "/home/ubuntu/scratch/info/notifications.txt"
-logs = "/home/ubuntu/scratch/info/logs.txt"
-allowsend = "/home/ubuntu/scratch/info/allowsend.txt"
+from functools import wraps
 
 path = "/home/ubuntu/password.txt"
 
@@ -54,39 +46,45 @@ def authenticate(username, prime1, prime2, next_product):
     print(f"[{get_time()}] Failed to authenticate user {username}")
     return "Failed"
 
-@client.request
-def test(username, prime1, prime2, next_product, text): #username, prime1, prime2, next_product should always be the first 4 arguments in a verified function
-    # this code should be used for functions where you need to verify the user's identity after the initial authentication
-    status = verify_user(username, prime1, prime2, next_product)
-    if status != "Verified":
-        return status
-    # your code here
-    return text #this is just a small example. This function just returns whatever you put as text
+def verified_request(func):
+    @wraps(func)
+    def wrapper(username, prime1, prime2, next_product, *args, **kwargs):
+        function_name = func.__name__
+        status = verify_user(username, prime1, prime2, next_product,function_name)
+        if status != "Verified":
+            return status
+        return func(username, *args, **kwargs)
+    return wrapper
     
-        
+def verify_user(username,prime1,prime2,next_product, function_name):
+    verificator = verificators.get(username)
 
-def verify_user(username,prime1,prime2,next_product):
-    verificator = verificators[username]
+    if verificator is None:
+        print(f"User \"{username}\" tried executing \"{function_name}\" without authentication")
+        return "Not authenticated"
+
     prime1 = int(prime1)
     prime2 = int(prime2)
     current_product = prime1 * prime2
-    for value in verificators.values():
-        print(f"Next product: {value.next_product}")
 
-    print(next_product)
-    print(str(verificator.next_product))
     if verificator.expires_at < int(time.time()):
         verificators.pop(username)
-        print(f"[{get_time()}] Verificator for user {username} expired")
+        print(f"[{get_time()}] Verificator for user {username} expired in function: \"{function_name}\"")
         return "Expired"
     if int(current_product) == int(verificator.next_product):
         expires_at = int(time.time()) + 10 * 60 #adds ten minures
-        verificators[username] = Verificator(next_product, expires_at)
-        print(f"[{get_time()}] Verified user {username}")
+        verificators[username] = Verificator(int(next_product), expires_at)
+        print(f"[{get_time()}] Verified user \"{username}\" for function: \"{function_name}\"")
         return "Verified"
     else:
-        print(f"[{get_time()}] Failed to verify user {username}")
+        print(f"[{get_time()}] Failed to verify user: \"{username}\" for function: \"{function_name}\"")
         return "Failed"
+
+@client.request
+@verified_request
+def test(username, prime1, prime2, next_product, text): #username, prime1, prime2, next_product should always be present to be able to authenticate
+    return text
+
 
 def get_time():
     return str(datetime.now().strftime("%B %d, %Y  %H:%M:%S"))
