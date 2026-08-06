@@ -5,6 +5,7 @@ from time import strftime
 from random import randint
 from dataclasses import dataclass
 from functools import wraps
+from primes.primes import is_prime, generate_prime
 
 cloud = sa.get_tw_cloud("1365548096") # main project that sends all the requests
 client = cloud.requests()
@@ -32,6 +33,9 @@ def authenticate(username, prime1, prime2, next_product):
         comment = comment.content
         prime1 = int(prime1)
         prime2 = int(prime2)
+        if not is_prime(prime1) or not is_prime(prime2): # checks if the primes sent by the user are actually prime
+            print(f"[{get_time()}] User \"{username}\" tried bypassing securty measures in function \"authenticate\".")
+            return "Good try, but it is already fixed."
         product = prime1 * prime2 # multiplies primes sent by the user
         if int(product) == int(comment): # checks the product
             expires_at = int(time.time()) + 10 * 60 #adds ten minures
@@ -60,6 +64,9 @@ def verify_user(username,prime1,prime2,next_product, function_name):
 
     prime1 = int(prime1)
     prime2 = int(prime2)
+    if not is_prime(prime1) or not is_prime(prime2):
+        print(f"[{get_time()}] User \"{username}\" tried bypassing securty measures in function \"{function_name}\".")
+        return "Good try, but it is already fixed."
     current_product = prime1 * prime2
 
     if verificator.expires_at < int(time.time()): # checks whether the verificator had expired
@@ -78,6 +85,7 @@ def verify_user(username,prime1,prime2,next_product, function_name):
 
 def get_time():
     return str(datetime.now().strftime("%B %d, %Y  %H:%M:%S"))
+
 
 
 # Your requests
