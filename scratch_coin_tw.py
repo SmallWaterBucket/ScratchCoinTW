@@ -146,6 +146,8 @@ def test(username, text):  # very simple example for how to use the verified req
 
 @client.request
 def get_balance(username):
+    add_new_user_if_non_existant(username)
+
     username = username.lower()
     db = get_db()
     cursor = db.cursor()
