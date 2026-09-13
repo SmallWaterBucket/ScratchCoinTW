@@ -108,6 +108,8 @@ def add_notification(username, notification):
     cursor.execute("INSERT INTO balances (username, notification) values (%s, %s);",(username,notification,)) # DB format: (id, username, balance, read_notifications, accepted)
 
 def set_balance(username, amount):
+    add_new_user_if_non_existant(username)
+
     username = username.lower()
     db = get_db()
     cursor = db.cursor()
@@ -123,6 +125,17 @@ def is_number(value):
         return True
     except ValueError:
         return False
+
+def add_new_user_if_non_existant(username):
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * from balances where username = %s", (username,))
+    response = cursor.fetchone()
+    if not response:
+        cursor.execute("INSERT INTO balances (username, balance, read_notifications, accepted) values (%s, 100,0,0);", (username))
+    
 
 
 # Your requests
