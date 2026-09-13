@@ -106,6 +106,7 @@ def add_notification(username, notification):
     db = get_db()
     cursor = db.cursor()
     cursor.execute("INSERT INTO balances (username, notification) values (%s, %s);",(username,notification,)) # DB format: (id, username, balance, read_notifications, accepted)
+    db.commit()
 
 def set_balance(username, amount):
     add_new_user_if_non_existant(username)
@@ -114,6 +115,7 @@ def set_balance(username, amount):
     db = get_db()
     cursor = db.cursor()
     cursor.execute("UPDATE balances set balance = %s where username = %s;",(amount,username)) # DB format: (id, username, balance, read_notifications, accepted)
+    db.commit()
 
 def add_balance(username, amount):
     amount = int(amount)
@@ -134,7 +136,8 @@ def add_new_user_if_non_existant(username):
     cursor.execute("SELECT * from balances where username = %s", (username,))
     response = cursor.fetchone()
     if not response:
-        cursor.execute("INSERT INTO balances (username, balance, read_notifications, accepted) values (%s, 100,0,0);", (username))
+        cursor.execute("INSERT INTO balances (username, balance, read_notifications, accepted) values (%s, 100,0,0);", (username,))
+        db.commit()
     
 
 
