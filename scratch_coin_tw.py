@@ -6,8 +6,9 @@ from random import randint
 from dataclasses import dataclass
 from functools import wraps
 from primes.primes import is_prime, generate_prime
+import MySQLdb
 
-cloud = sa.get_tw_cloud("1365548096") # main project that sends all the requests
+cloud = sa.get_tw_cloud("1380228933") # main project that sends all the requests
 client = cloud.requests()
 verificators = {}
 project = sa.get_project("1366081158") # project to post verification codes in
@@ -86,6 +87,42 @@ def verify_user(username,prime1,prime2,next_product, function_name):
 def get_time():
     return str(datetime.now().strftime("%B %d, %Y  %H:%M:%S"))
 
+#==========================================================================================================================
+
+password_path = "/home/ubuntu/password.txt"
+
+
+def get_db():
+    password = open(password_path,"r").read().strip()
+    db = MySQLdb.connect(
+        host="localhost",
+        user="scratch",
+        passwd=password,
+        database="scratch"
+    )
+    return db
+
+def add_notification(username, notification):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("INSERT INTO balances (username, notification) values (%s, %s);",(username,notification,)) # DB format: (id, username, balance, read_notifications, accepted)
+
+def set_balance(username, amount):
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("UPDATE balances set balance = %s where username = %s;",(amount,username)) # DB format: (id, username, balance, read_notifications, accepted)
+
+def add_balance(username, amount):
+    amount = int(amount)
+    set_balance(username, get_balance(username) + amount)
+
+def is_number(value):
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
 
 
 # Your requests
@@ -94,6 +131,37 @@ def get_time():
 def test(username, text):  # very simple example for how to use the verified requests
     return f"{str(username)} : {str(text)}"
 
+@client.request
+def get_balance(username):
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT balance FROM balances WHERE username = (%s);",(username,)) # DB format: (id, username, balance, read_notifications, accepted)
+    response = cursor.fetchone()
+
+    if not response:
+        return "-1"
+
+    return response[0]
+
+@client.request
+@verified_request
+def give(username, recepient, amount, message):
+    if not is_number(amount):
+        return "Please enter only numbers"
+
+    amount = int(amount)
+
+    if get_balance(username) < amount:
+        return f"You can't give {amount} SC to {recepient} as you don't have them."
+
+    add_balance(username, 0 - amount)
+
+    add_balance(recepient, amount)
+
+    add_notification(recepient, f"{username} has given you {amount} SC with the message: \"{message}\"")
+
+    return f"Successfully gave {recepient} {amount} SC."
 
 
 
