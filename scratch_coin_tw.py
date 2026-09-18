@@ -105,7 +105,7 @@ def get_db():
 def add_notification(username, notification):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("INSERT INTO balances (username, notification) values (%s, %s);",(username,notification,)) # DB format: (id, username, balance, read_notifications, accepted)
+    cursor.execute("INSERT INTO notifications (username, notification) values (%s, %s);",(username,notification,)) # DB format: (id, username, balance, read_notifications, accepted)
     db.commit()
 
 def set_balance(username, amount):
