@@ -148,6 +148,9 @@ def test(username, text):  # very simple example for how to use the verified req
     return f"{str(username)} : {str(text)}"
 
 @client.request
+def get_balance_request(username):
+    return str(get_balance(username))
+
 def get_balance(username):
     add_new_user_if_non_existant(username)
 
@@ -158,9 +161,9 @@ def get_balance(username):
     response = cursor.fetchone()
 
     if not response:
-        return "-1"
+        return -1
 
-    return response[0]
+    return int(response[0])
 
 @client.request
 @verified_request
@@ -170,7 +173,7 @@ def give(username, recepient, amount, message):
 
     amount = int(amount)
 
-    if get_balance(username) < amount:
+    if int(get_balance(username)) < amount:
         return f"You can't give {amount} SC to {recepient} as you don't have them."
 
     add_balance(username, 0 - amount)
