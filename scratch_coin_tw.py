@@ -8,7 +8,7 @@ from functools import wraps
 from primes.primes import is_prime, generate_prime
 import MySQLdb
 
-cloud = sa.get_tw_cloud("1380228933") # main project that sends all the requests
+cloud = sa.get_tw_cloud("1383064574") # main project that sends all the requests
 client = cloud.requests()
 verificators = {}
 project = sa.get_project("1366081158") # project to post verification codes in
