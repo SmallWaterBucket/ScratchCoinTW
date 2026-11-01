@@ -165,6 +165,7 @@ def test(username, text):  # very simple example for how to use the verified req
 
 @client.request
 def get_balance_request(username):
+    print(f"[{get_time()}] Get balance was requested for user \"{username}\"")
     return str(get_balance(username))
 
 def get_balance(username):
