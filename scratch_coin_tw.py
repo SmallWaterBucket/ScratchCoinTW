@@ -138,8 +138,24 @@ def add_new_user_if_non_existant(username):
     if not response:
         cursor.execute("INSERT INTO balances (username, balance, read_notifications, accepted) values (%s, 100,0,0);", (username,))
         db.commit()
-    
 
+def get_notifications(username,date):
+    username = username.lower()
+    return "Not implemented yet."
+
+def give(username, recepient, amount):
+    if int(get_balance(username)) < amount:
+        return f"Failed"
+
+    if amount < 0:
+        return f"Failed"
+
+    add_balance(username, 0 - amount)
+
+    add_balance(recepient, amount)
+
+    return "Success"
+    
 
 # Your requests
 @client.request
@@ -167,7 +183,7 @@ def get_balance(username):
 
 @client.request
 @verified_request
-def give(username, recepient, amount, message):
+def give_request(username, recepient, amount, message):
     if not is_number(amount):
         return "Please enter only numbers"
 
@@ -176,13 +192,18 @@ def give(username, recepient, amount, message):
     if int(get_balance(username)) < amount:
         return f"You can't give {amount} SC to {recepient} as you don't have them."
 
-    add_balance(username, 0 - amount)
+    if amount < 0:
+        return "Cannot give someone negative SC, that's called stealing."
 
-    add_balance(recepient, amount)
+    status = give(username, recepient, amount)
+
+    if status == "Failed":
+        return f"Failed to give \"{username}\" {amount} SC."
 
     add_notification(recepient, f"{username} has given you {amount} SC with the message: \"{message}\"")
 
     return f"Successfully gave {recepient} {amount} SC."
+
 
 
 
