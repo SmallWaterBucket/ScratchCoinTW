@@ -163,7 +163,7 @@ def agreed_to_terms(username):
     username = username.lower()
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("SELECT accepted FROM balances WHERE username = %s;",(username,)) # DB format: (id, username, balance, read_notifications, accepted)
+    cursor.execute("SELECT accepted FROM balances WHERE username = %s;",(username)) # DB format: (id, username, balance, read_notifications, accepted)
     response = cursor.fetchone()
     return str(response)
     
