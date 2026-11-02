@@ -155,6 +155,17 @@ def give(username, recepient, amount):
     add_balance(recepient, amount)
 
     return "Success"
+
+
+def agreed_to_terms(username):
+    add_new_user_if_non_existant(username)
+
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT accepted FROM balances WHERE username = %s;",(username,)) # DB format: (id, username, balance, read_notifications, accepted)
+    response = cursor.fetchone()
+    return str(response)
     
 
 # Your requests
@@ -188,6 +199,9 @@ def give_request(username, recepient, amount, message):
     if not is_number(amount):
         return "Please enter only numbers"
 
+    if agreed_to_terms(username) == "0":
+        return "You must first agree to the Terms of Use until doing anything else."
+
     amount = int(amount)
 
     if int(get_balance(username)) < amount:
@@ -210,19 +224,12 @@ def other_user_balance_request(username):
     return f"{username} has {get_balance(username)} SC."
 
 @client.request
-def agreed_to_terms(username):
-    add_new_user_if_non_existant(username)
-
-    username = username.lower()
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT accepted FROM balances WHERE username = %s;",(username,)) # DB format: (id, username, balance, read_notifications, accepted)
-    response = cursor.fetchone()
-    return str(response)
+def agreed_to_terms_request(username):
+    return agreed_to_terms(username)
 
 @client.request
 @verified_request
-def accept_terms(username):
+def accept_terms(username, apple):
     add_new_user_if_non_existant(username)
     
     username = username.lower()
