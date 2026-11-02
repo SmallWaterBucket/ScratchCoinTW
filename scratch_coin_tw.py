@@ -205,6 +205,37 @@ def give_request(username, recepient, amount, message):
 
     return f"Successfully gave {recepient} {amount} SC."
 
+@client.request
+def other_user_balance_request(username):
+    return f"{username} has {get_balance(username)} SC."
+
+@client.request
+def agreed_to_terms(username):
+    add_new_user_if_non_existant(username)
+
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT accepted FROM balances WHERE username = %s;",(username,)) # DB format: (id, username, balance, read_notifications, accepted)
+    response = cursor.fetchone()
+    return str(response)
+
+@client.request
+@verified_request
+def accept_terms(username):
+    add_new_user_if_non_existant(username)
+    
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("update balances set accepted = 1 WHERE username = %s;",(username,)) # DB format: (id, username, balance, read_notifications, accepted)
+    db.commit()
+
+    cursor.execute("SELECT accepted FROM balances WHERE username = %s;",(username,)) # DB format: (id, username, balance, read_notifications, accepted)
+    response = cursor.fetchone()
+    return str(response)
+
+
 
 
 
