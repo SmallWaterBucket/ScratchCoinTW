@@ -38,6 +38,7 @@ def authenticate(username, prime1, prime2, next_product):
             print(f"[{get_time()}] User \"{username}\" tried bypassing securty measures in function \"authenticate\".")
             return "Good try, but it is already fixed."
         product = prime1 * prime2 # multiplies primes sent by the user
+        print(f"DEBUG:\nprime1: {prime1},\nprime2: {prime2},\ncurrent_product: {product},\nverificator.next_product: {comment},\nnext_product: {next_product}")
         if int(product) == int(comment): # checks the product
             expires_at = int(time.time()) + 10 * 60 #adds ten minures
             verificators[username] = Verificator(int(next_product), expires_at) # adds a verificator item
@@ -70,7 +71,7 @@ def verify_user(username,prime1,prime2,next_product, function_name):
         return "Good try, but it is already fixed."
     current_product = prime1 * prime2
 
-    print(f"DEBUG:\nprime1: {prime1},\nprime2: {prime2},\ncurrent_product: {current_product},\nverificator.next_product: {verificator.next_product},\nnext_product: {verificator.next_product}")
+    print(f"DEBUG:\nprime1: {prime1},\nprime2: {prime2},\ncurrent_product: {current_product},\nverificator.next_product: {verificator.next_product},\nnext_product: {next_product}")
 
     if verificator.expires_at < int(time.time()): # checks whether the verificator had expired
         verificators.pop(username)
