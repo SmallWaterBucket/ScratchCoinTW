@@ -70,6 +70,8 @@ def verify_user(username,prime1,prime2,next_product, function_name):
         return "Good try, but it is already fixed."
     current_product = prime1 * prime2
 
+    print(f"DEBUG:\nprime1: {prime1},\nprime2: {prime2},\ncurrent_product: {current_product},\nverificator.next_product: {verificator.next_product},\nnext_product: {verificator.next_product}")
+
     if verificator.expires_at < int(time.time()): # checks whether the verificator had expired
         verificators.pop(username)
         print(f"[{get_time()}] Verificator for user {username} expired in function: \"{function_name}\"")
@@ -81,7 +83,6 @@ def verify_user(username,prime1,prime2,next_product, function_name):
         return "Verified"
     else:
         print(f"[{get_time()}] Failed to verify user: \"{username}\" for function: \"{function_name}\":")
-        print(f"prime1: {prime1},\nprime2: {prime2},\nnext_product: {verificator.next_product}")
         return "Failed"
 
 
