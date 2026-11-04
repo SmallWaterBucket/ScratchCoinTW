@@ -57,8 +57,6 @@ def verified_request(func):
     return wrapper
     
 def verify_user(username,prime1,prime2,next_product, function_name):
-    username = username.lower()
-
     verificator = verificators.get(username)
 
     if verificator is None:
@@ -83,7 +81,7 @@ def verify_user(username,prime1,prime2,next_product, function_name):
         return "Verified"
     else:
         print(f"[{get_time()}] Failed to verify user: \"{username}\" for function: \"{function_name}\":")
-        #print(f"prime1: {prime1},\nprime2: {prime2},\nnext_product: {verificator.next_product}")
+        print(f"prime1: {prime1},\nprime2: {prime2},\nnext_product: {verificator.next_product}")
         return "Failed"
 
 
