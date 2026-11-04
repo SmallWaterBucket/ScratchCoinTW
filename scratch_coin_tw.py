@@ -175,6 +175,11 @@ def test(username, text):  # very simple example for how to use the verified req
     return f"{str(username)} : {str(text)}"
 
 @client.request
+@verified_request # include this if you want to check for the legitimacy of the sender of the request
+def test2(username, text):  # very simple example for how to use the verified requests
+    return f"test: {str(username)} : {str(text)}"
+
+@client.request
 def get_balance_request(username):
     print(f"[{get_time()}] Get balance was requested for user \"{username}\"")
     return str(get_balance(username))
