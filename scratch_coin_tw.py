@@ -83,8 +83,8 @@ def verify_user(username,prime1,prime2,next_product, function_name):
         print(f"[{get_time()}] Verified user \"{username}\" for function: \"{function_name}\"")
         return "Verified"
     else:
-        print(f"[{get_time()}] Failed to verify user: \"{username}\" for function: \"{function_name}\":")
-        return "Failed"
+        print(f"[{get_time()}] Failed to verify user: \"{username}\" for function: \"{function_name}\"")
+        return f"Failed|Failed to verify user: \"{username}\" for function: \"{function_name}\".|Something went wrong, please report it in the comments.|After that restart the project."
 
 
 def get_time():
@@ -221,7 +221,7 @@ def give_request(username, recepient, amount, message):
     status = give(username, recepient, amount)
 
     if status == "Failed":
-        return f"Failed to give \"{username}\" {amount} SC."
+        return f"Something went wrong :(|Failed to give \"{username}\" {amount} SC."
 
     add_notification(recepient, f"{username} has given you {amount} SC with the message: \"{message}\"")
 
@@ -313,6 +313,7 @@ def read_notifications_announcment(username, number):
     cursor = db.cursor()
     cursor.execute("UPDATE balances SET read_notifications = %s where username = %s;", (number, username)) # DB format: (id, username, balance, read_notifications, accepted)
     db.commit()
+    return
 
 
 @client.event
