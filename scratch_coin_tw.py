@@ -225,11 +225,11 @@ def give_request(username, recepient, amount, message):
 
     add_notification(recepient, f"{username} has given you {amount} SC with the message: \"{message}\"")
 
-    return f"Successfully gave {recepient} {amount} SC."
+    return f"Server:|Successfully gave {recepient} {amount} SC."
 
 @client.request
 def other_user_balance_request(username):
-    return f"{username} has {get_balance(username)} SC."
+    return f"Get balance:|{username} has {get_balance(username)} SC."
 
 @client.request
 def agreed_to_terms_request(username):
@@ -271,7 +271,7 @@ def leaderboard(username):
 
     position = cursor.fetchone()[0]
 
-    return_str = f"You are {position} out of {total}|That is {str(((total - position + 1)/total * 100))}%|"
+    return_str = f"Leaderboard:|You are {position} out of {total}|That is {str(((total - position + 1)/total * 100))}%|"
 
     i = 1
     for person, balance in ppl:
@@ -287,9 +287,10 @@ def get_notifications(username):
     cursor = db.cursor()
     cursor.execute("SELECT message FROM notifications WHERE username = %s;", (username,)) # DB format: (id, username, balance, read_notifications, accepted)
     notifications = cursor.fetchall()
-    return_str = ""
+    return_str = "Notifications:|"
     for i in range(notifications):
         return_str+=f"{i+1}) {notifications[i]}|"
+    return return_str
 
 @client.request
 def read_notifications_question(username):
@@ -298,7 +299,9 @@ def read_notifications_question(username):
     cursor = db.cursor()
     cursor.execute("SELECT read_notifications FROM balances WHERE username = %s;", (username,)) # DB format: (id, username, balance, read_notifications, accepted)
     read_notifications = cursor.fetchone()[0]
-    return read_notifications
+    cursor.execute("SELECT COUNT(message) AS messagesFROM notifications WHERE username = %s;", (username,)) # DB format: (id, username, balance, read_notifications, accepted)
+    count = cursor.fetchone()[0]
+    return f"{read_notifications}|{count}"
 
 
 @client.request
