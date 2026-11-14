@@ -258,7 +258,7 @@ def leaderboard(username):
     cursor.execute("SELECT username, balance FROM balances ORDER BY balance LIMIT 10;") # DB format: (id, username, balance, read_notifications, accepted)
     ppl = cursor.fetchall()
     cursor.execute("SELECT COUNT(username) AS usernames from balances;")
-    total = cursor.fetchone()
+    total = cursor.fetchone()[0]
     cursor.execute("""
     SELECT position
     FROM (
