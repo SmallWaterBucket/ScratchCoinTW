@@ -313,7 +313,7 @@ def read_notifications_announcment(username, number):
     cursor = db.cursor()
     cursor.execute("UPDATE balances SET read_notifications = %s where username = %s;", (number, username)) # DB format: (id, username, balance, read_notifications, accepted)
     db.commit()
-    return
+    return "IGNORE"
 
 
 @client.event
