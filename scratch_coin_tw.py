@@ -315,6 +315,83 @@ def read_notifications_announcment(username, number):
     db.commit()
     return "IGNORE"
 
+@client.request
+@verified_request
+def add_charge(username, charge_who, amount, message):
+
+    add_new_user_if_non_existant(username)
+    add_new_user_if_non_existant(charge_who)
+
+    if not is_number(amount):
+        return "Error:|Please enter only numbers"
+    
+    if agreed_to_terms(username) == "0":
+        return "Error:|You must first agree to the Terms of Use until doing anything else."
+        
+    username = username.lower()
+    charge_who = charge_who.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("INSERT INTO charges (sent_by, sent_to, amount,message) VALUES (%s,%s,%s,%s)",(username, charge_who, amount, message)) # DB format: (id, sent_by, sent_to, amount, message)
+    db.commit()
+
+    add_notification(charge_who,f"\"{username}\" charged you {amount}SC for {message}")
+
+@client.request
+def get_charges(username):
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT id, sent_by, amount, message from charges WHERE username = %s",(username,)) # DB format: (id, sent_by, sent_to, amount, message)
+    charges = cursor.fetchall()
+    return_str = f"Press \"a\" to do any action:|"
+    for id, sent_by, amount, message in charges:
+        return_str+=f"ID: {id}; {sent_by} charged you {amount}SC for \"{message}\"|"
+
+    return return_str
+
+
+def get_charge(charge_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT id, sent_by, amount, message from charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
+    charge = cursor.fetchall()
+    id, sent_by, amount, message = charge
+    return_str = f"Pay this charge?|ID: {id},|Send SC to: {sent_by},|Amount: {amount},|Message: {message}"
+    return return_str
+
+
+
+@client.request
+@verified_request
+def accept_charge(username, charge_id):
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT sent_by, amount, message from charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
+    charge = cursor.fetchall()
+    sent_by, amount, message = charge
+    status = give(username,sent_by, amount)
+    if status == "Success":
+        add_notification(sent_by, f"\"{username}\" payed you {amount}SC for the charge \"{message}\".")
+        cursor.execute("DELETE FROM charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
+        return f"Success|Successfully payed the charge {charge_id}."
+    else:
+        return f"Failed|Failed to pay the charge {charge_id}.|If this continues hapenning and you are unsure why, ask me in the comments."
+
+
+@client.request
+@verified_request
+def cancel_charge(username, charge_id):
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT sent_by, amount, message from charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
+    charge = cursor.fetchall()
+    sent_by, amount, message = charge
+    cursor.execute("DELETE FROM charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
+    return f"Success|Successfully canceled the charge {charge_id}."
+
 
 @client.event
 def on_ready():
