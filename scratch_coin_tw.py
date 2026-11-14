@@ -247,7 +247,7 @@ def accept_terms(username, apple):
     db.commit()
 
     cursor.execute("SELECT accepted FROM balances WHERE username = %s;",(username,)) # DB format: (id, username, balance, read_notifications, accepted)
-    response = cursor.fetchone()
+    response = cursor.fetchone()[0]
     return str(response)
 
 @client.request
