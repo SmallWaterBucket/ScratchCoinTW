@@ -280,8 +280,35 @@ def leaderboard(username):
 
     return return_str
 
+@client.request
+def get_notifications(username):
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT message FROM notifications WHERE username = %s;", (username,)) # DB format: (id, username, balance, read_notifications, accepted)
+    notifications = cursor.fetchall()
+    return_str = ""
+    for i in range(notifications):
+        return_str+=f"{i+1}) {notifications[i]}|"
+
+@client.request
+def read_notifications_question(username):
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT read_notifications FROM balances WHERE username = %s;", (username,)) # DB format: (id, username, balance, read_notifications, accepted)
+    read_notifications = cursor.fetchone()[0]
+    return read_notifications
 
 
+@client.request
+@verified_request
+def read_notifications_anouncment(username, number):
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("UPDATE balances SET read_notifications = %s where username = %s;", (number, username)) # DB format: (id, username, balance, read_notifications, accepted)
+    db.commit()
 
 
 @client.event
