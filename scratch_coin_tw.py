@@ -255,7 +255,7 @@ def leaderboard(username):
     username = username.lower()
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("SELECT username, balance FROM balances ORDER BY balance LIMIT 10;") # DB format: (id, username, balance, read_notifications, accepted)
+    cursor.execute("SELECT username, balance FROM balances ORDER BY balance DESC LIMIT 10;") # DB format: (id, username, balance, read_notifications, accepted)
     ppl = cursor.fetchall()
     cursor.execute("SELECT COUNT(username) AS usernames from balances;")
     total = cursor.fetchone()[0]
@@ -271,11 +271,11 @@ def leaderboard(username):
 
     position = cursor.fetchone()[0]
 
-    return_str = f"You are {position} out of {total}|That is {str(round(position/total) * 100)}%|"
+    return_str = f"You are {position} out of {total}|That is {str(round((total - position + 1)/total) * 100)}%|"
 
     i = 1
     for person, balance in ppl:
-        return_str += f"{i}) {person}{" " * (20 - len(person))}{balance}|"
+        return_str += f"{i})  {balance}{" " * (5 - len(balance))}{person}"
         i+=1
 
     return return_str
