@@ -275,7 +275,7 @@ def leaderboard(username):
 
     i = 1
     for person, balance in ppl:
-        return_str += f"{i})  {balance}{" " * (6 - len(str(balance)) - len(str(i) - 1))}{person}|"
+        return_str += f"{i})  {balance}{" " * (7 - len(str(balance)) - len(str(i)))}{person}|"
         i+=1
 
     return return_str
