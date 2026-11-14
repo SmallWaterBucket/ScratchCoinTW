@@ -288,8 +288,9 @@ def get_notifications(username):
     cursor.execute("SELECT message FROM notifications WHERE username = %s;", (username,)) # DB format: (id, username, balance, read_notifications, accepted)
     notifications = cursor.fetchall()
     return_str = "Notifications:|"
-    for i in range(notifications):
-        return_str+=f"{i+1}) {notifications[i]}|"
+    i = 1
+    for notification in notifications:
+        return_str+=f"{i}) {notification}|"
     return return_str
 
 @client.request
