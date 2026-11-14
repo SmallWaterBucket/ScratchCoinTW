@@ -271,7 +271,7 @@ def leaderboard(username):
 
     position = cursor.fetchone()[0]
 
-    return_str = f"You are {position} out of {total}|That is {str(round(position/total) * 100)}%"
+    return_str = f"You are {position} out of {total}|That is {str(round(position/total) * 100)}%|"
 
     for i in range(ppl):
         return_str += f"{i + 1}) {ppl[i][0]}{" " * (20 - len(ppl[i][0]))}{ppl[i][1]}|"
