@@ -307,7 +307,7 @@ def read_notifications_question(username):
 
 @client.request
 @verified_request
-def read_notifications_anouncment(username, number):
+def read_notifications_announcment(username, number):
     username = username.lower()
     db = get_db()
     cursor = db.cursor()
