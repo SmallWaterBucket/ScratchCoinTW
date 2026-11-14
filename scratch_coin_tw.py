@@ -342,7 +342,7 @@ def get_charges(username):
     username = username.lower()
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("SELECT id, sent_by, amount, message from charges WHERE username = %s",(username,)) # DB format: (id, sent_by, sent_to, amount, message)
+    cursor.execute("SELECT id, sent_by, amount, message from charges WHERE sent_to = %s",(username,)) # DB format: (id, sent_by, sent_to, amount, message)
     charges = cursor.fetchall()
     return_str = f"Press \"a\" to do any action:|"
     for id, sent_by, amount, message in charges:
