@@ -271,11 +271,11 @@ def leaderboard(username):
 
     position = cursor.fetchone()[0]
 
-    return_str = f"You are {position} out of {total}|That is {str(round((total - position + 1)/total) * 100)}%|"
+    return_str = f"You are {position} out of {total}|That is {str(((total - position + 1)/total * 100))}%|"
 
     i = 1
     for person, balance in ppl:
-        return_str += f"{i})  {balance}{" " * (5 - len(str(balance)))}{person}"
+        return_str += f"{i})  {balance}{" " * (5 - len(str(balance)))}{person}|"
         i+=1
 
     return return_str
