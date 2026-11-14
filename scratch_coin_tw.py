@@ -290,7 +290,7 @@ def get_notifications(username):
     return_str = "Notifications:|"
     i = 1
     for notification in notifications:
-        return_str+=f"{i}) {notification}|"
+        return_str+=f"{i}) {notification[0]}|"
     return return_str
 
 @client.request
