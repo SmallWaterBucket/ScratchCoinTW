@@ -291,6 +291,7 @@ def get_notifications(username):
     i = 1
     for notification in notifications:
         return_str+=f"{i}) {notification[0]}|"
+        i+=1
     return return_str
 
 @client.request
@@ -336,6 +337,8 @@ def add_charge(username, charge_who, amount, message):
     db.commit()
 
     add_notification(charge_who,f"\"{username}\" charged you {amount}SC for {message}")
+
+    return f"Success|Charged \"{username}\" {amount}SC"
 
 @client.request
 def get_charges(username):
