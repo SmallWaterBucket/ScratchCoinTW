@@ -250,7 +250,30 @@ def accept_terms(username, apple):
     response = cursor.fetchone()
     return str(response)
 
+@client.request
+def leaderboard(username):
+    username = username.lower()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT (username, balance) FROM balances ORDER BY balance LIMIT 10;") # DB format: (id, username, balance, read_notifications, accepted)
+    ppl = cursor.fetchall()
+    cursor.execute("SELECT COUNT(username) AS usernames from balances;")
+    total = cursor.fetchone()
+    cursor.execute("""
+    SELECT position
+    FROM (
+        SELECT username,
+               ROW_NUMBER() OVER (ORDER BY balance DESC) AS position
+        FROM balances
+    ) AS leaderboard
+    WHERE username = %s;
+    """, (username.lower(),))
 
+    position = cursor.fetchone()[0]
+
+    ppl.insert(0,f"You are {position} out of {total}")
+
+    return ppl
 
 
 
