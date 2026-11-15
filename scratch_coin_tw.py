@@ -120,7 +120,7 @@ def register_shop_listener(shop_id):
     cloud = sa.get_tw_cloud(shop_id) # the shop listener
     client = cloud.requests()
 
-    shop_owner = sa.get_project(shop_id).author().lower()
+    shop_owner = sa.get_project(shop_id).author().username.lower()
 
     @client.request
     def ping(): #called when client receives request
@@ -472,7 +472,7 @@ def register_shop_listener(shop_id):
         if agreed_to_terms(sent_to) == "0":
             return "Error:|You must first agree to the Terms of Use until doing anything else."
 
-        if is_blocked == "1":
+        if is_blocked(sent_by) == "1":
                 return "You are blocked.|You cannot do anything in Scratch Coin as you have been banned for violating the Terms of Service.|If you think you have been banned without doing anything against the ToS you can always appeal in the comments.|-SAMURAI228"
 
         if not sa.get_user(sent_to):
@@ -495,10 +495,19 @@ def register_shop_listener(shop_id):
     @client.request
     @verified_request
     def add_shop(username, add_shop_id):
+        username = username.lower()
+
         if shop_id != 1385838253:
             return "You can only register shops in the main project"
 
-        username = username.lower()
+        project_author = sa.get_project(add_shop_id).author().username.lower()
+
+        if is_blocked(username) == "1":
+            return "You are blocked.|You cannot do anything in Scratch Coin as you have been banned for violating the Terms of Service.|If you think you have been banned without doing anything against the ToS you can always appeal in the comments.|-SAMURAI228"
+
+        if project_author != username:
+            return f"Error|The shop you are trying to add doesn't seem to belong to you.|You: {username}|Shop owner: {project_author}"
+
         db = get_db()
         cursor = db.cursor()
         cursor.execute("INSERT INTO projects (project_id, owner) VALUES (%s,%s)",(add_shop_id, username))
