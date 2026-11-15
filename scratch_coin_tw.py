@@ -106,6 +106,7 @@ def get_db():
     return db
 
 def add_notification(username, notification):
+    username = username.lower()
     db = get_db()
     cursor = db.cursor()
     cursor.execute("INSERT INTO notifications (username, message) values (%s, %s);",(username,notification,)) # DB format: (id, username, balance, read_notifications, accepted)
@@ -363,7 +364,7 @@ def get_charge(charge_id, username):
     if not charge:
         return f"Wrong ID|The charge with the ID: {charge_id} doesn't exit.|Please check the ID and try again."
     id, sent_by, sent_to, amount, message = charge
-    if username != sent_to:
+    if username.lower() != sent_to:
         return f"Wrong ID|This charge wasn't sent to you.|Please check the ID and try again."
     return_str = f"Pay this charge?|ID: {id},|Send SC to: {sent_by},|Amount: {amount},|Message: {message}"
     return return_str
@@ -379,7 +380,7 @@ def accept_charge(username, charge_id):
     cursor.execute("SELECT sent_by, sent_to, amount, message from charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
     charge = cursor.fetchall()
     sent_by, sent_to, amount, message = charge
-    if username != sent_to:
+    if username.lower() != sent_to:
         return "Error:|You can only accept charges sent to you.|Try putting in the correct ID number."
     status = give(username,sent_by, amount)
     if status == "Success":
@@ -399,7 +400,7 @@ def cancel_charge(username, charge_id):
     cursor.execute("SELECT sent_to from charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
     charge = cursor.fetchone()[0]
     sent_to = charge
-    if sent_to != username:
+    if sent_to != username.lower():
         return "Error:|You can only cancel charges sent to you.|Try putting in the correct ID number."
     cursor.execute("DELETE FROM charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
     return f"Success|Successfully canceled the charge {charge_id}."
