@@ -522,8 +522,8 @@ def register_shop_listener(shop_id):
     @client.event
     def on_ready():
         print(f"Request handler for project {shop_id} is running")
-        client.start(thread=True) # thread=True is an optional argument. It makes the cloud requests handler run in a thread
 
+    client.start(thread=True) # thread=True is an optional argument. It makes the cloud requests handler run in a thread
 
 
 
