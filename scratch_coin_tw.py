@@ -406,6 +406,7 @@ def cancel_charge(username, charge_id):
 
 @client.request
 def shop_charge(sent_by, sent_to, amount, message):
+    return "Error|This function isn't implemented yet."
 
 
 
