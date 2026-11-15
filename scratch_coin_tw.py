@@ -143,10 +143,6 @@ def add_new_user_if_non_existant(username):
         cursor.execute("INSERT INTO balances (username, balance, read_notifications, accepted) values (%s, 100,0,0);", (username,))
         db.commit()
 
-def get_notifications(username,date):
-    username = username.lower()
-    return "Not implemented yet."
-
 def give(username, recepient, amount):
     if int(get_balance(username)) < amount:
         return f"Failed"
@@ -186,7 +182,7 @@ def test2(username, text):  # very simple example for how to use the verified re
 @client.request
 def get_balance_request(username):
     print(f"[{get_time()}] Get balance was requested for user \"{username}\"")
-    return str(get_balance(username))
+    return f"{str(get_balance(username))};"
 
 def get_balance(username):
     add_new_user_if_non_existant(username)
@@ -293,7 +289,7 @@ def get_notifications(username):
     for notification in notifications:
         return_str+=f"{i}) {notification[0]}|"
         i+=1
-    return return_str
+    return f"{return_str};"
 
 @client.request
 def read_notifications_question(username):
@@ -353,7 +349,7 @@ def get_charges(username):
         return_str+=f"ID: {id}; {sent_by} charged you {amount}SC for \"{message}\"|"
     if len(charges) == 0:
         return_str+="You haven't been charged yet.|After you are charged by a shop or another user, the charge will appear here."
-    return return_str
+    return f"{return_str};"
 
 @client.request
 def get_charge(charge_id, username):
@@ -367,7 +363,7 @@ def get_charge(charge_id, username):
     id, sent_by, sent_to, amount, message = charge
     if username.lower() != sent_to:
         return f"Wrong ID|This charge wasn't sent to you.|Please check the ID and try again."
-    return_str = f"Pay this charge?|ID: {id},|Send SC to: {sent_by},|Amount: {amount},|Message: {message}"
+    return_str = f"Pay this charge?|ID: {id},|Send SC to: {sent_by},|Amount: {amount},|Message: {message};"
     return return_str
 
 
