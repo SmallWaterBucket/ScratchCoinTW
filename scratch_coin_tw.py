@@ -304,7 +304,7 @@ def read_notifications_question(username):
     read_notifications = cursor.fetchone()[0]
     cursor.execute("SELECT COUNT(message) AS messages FROM notifications WHERE username = %s;", (username,)) # DB format: (id, username, balance, read_notifications, accepted)
     count = cursor.fetchone()[0]
-    return f"{read_notifications}|{count}"
+    return f"{read_notifications}|{count}|"
 
 
 @client.request
