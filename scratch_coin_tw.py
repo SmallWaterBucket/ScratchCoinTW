@@ -355,12 +355,16 @@ def get_charges(username):
     return return_str
 
 
-def get_charge(charge_id):
+def get_charge(charge_id, username):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("SELECT id, sent_by, amount, message from charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
+    cursor.execute("SELECT id, sent_by, sent_to, amount, message from charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
     charge = cursor.fetchall()
-    id, sent_by, amount, message = charge
+    if not charge:
+        return f"Wrong ID|The charge with the ID: {charge_id} doesn't exit.|Please check the ID and try again."
+    id, sent_by, sent_to, amount, message = charge
+    if username != sent_to:
+        return f"Wrong ID|This charge wasn't sent to you.|Please check the ID and try again."
     return_str = f"Pay this charge?|ID: {id},|Send SC to: {sent_by},|Amount: {amount},|Message: {message}"
     return return_str
 
