@@ -346,7 +346,7 @@ def get_charges(username):
     charges = cursor.fetchall()
     return_str = f"Press \"a\" to do any action:|"
     for id, sent_by, amount, message in charges:
-        return_str+=f"ID: {id}; {sent_by} charged you {amount}SC for \"{message}\"|"
+        return_str+=f"ID: {id}    {sent_by} charged you {amount}SC for \"{message}\"|"
     if len(charges) == 0:
         return_str+="You haven't been charged yet.|After you are charged by a shop or another user, the charge will appear here."
     return f"{return_str};"
