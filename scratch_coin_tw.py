@@ -375,7 +375,7 @@ def accept_charge(username, charge_id):
     db = get_db()
     cursor = db.cursor()
     cursor.execute("SELECT sent_by, sent_to, amount, message from charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
-    charge = cursor.fetchall()
+    charge = cursor.fetchall()[0]
     sent_by, sent_to, amount, message = charge
     if username.lower() != sent_to:
         return "Error:|You can only accept charges sent to you.|Try putting in the correct ID number."
