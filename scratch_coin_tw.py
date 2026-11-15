@@ -510,21 +510,19 @@ def register_shop_listener(shop_id):
         return f"Success|Successfully integrated your shop into the ScratchCoin shop system. It should now work on TurboWarp.|https://www.turbowarp.org/{add_shop_id}"
 
     
-
-
-
-
-
     @client.event
     def on_ready():
         print(f"Request handler for project {shop_id} is running")
         client.start(thread=True) # thread=True is an optional argument. It makes the cloud requests handler run in a thread
+
+
+
 
 db = get_db()
 cursor = db.cursor()
 cursor.execute("SELECT project_id from projects;")
 projects = cursor.fetchall()
 for loop_project in projects:
-    register_shop_listener(str(loop_project))
+    register_shop_listener(str(loop_project[0]))
 
 print(f"[{get_time()}] Connected to all {len(projects) - 1} shops")
