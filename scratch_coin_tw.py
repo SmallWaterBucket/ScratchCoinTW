@@ -214,6 +214,10 @@ def register_shop_listener(shop_id):
         return f"{str(get_balance(username))};"
 
     @client.request
+    def balance(username):
+        return f"{str(get_balance(username))}"
+
+    @client.request
     @verified_request
     def give_request(username, recepient, amount, message):
         if not is_number(amount):
