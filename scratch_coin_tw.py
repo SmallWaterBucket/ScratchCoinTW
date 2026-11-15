@@ -359,7 +359,7 @@ def get_charge(charge_id, username):
     db = get_db()
     cursor = db.cursor()
     cursor.execute("SELECT id, sent_by, sent_to, amount, message from charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
-    charge = cursor.fetchall()
+    charge = cursor.fetchall()[0]
     if not charge:
         return f"Wrong ID|The charge with the ID: {charge_id} doesn't exit.|Please check the ID and try again."
     id, sent_by, sent_to, amount, message = charge
@@ -403,6 +403,10 @@ def cancel_charge(username, charge_id):
         return "Error:|You can only cancel charges sent to you.|Try putting in the correct ID number."
     cursor.execute("DELETE FROM charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
     return f"Success|Successfully canceled the charge {charge_id}."
+
+@client.request
+def shop_charge(sent_by, sent_to, amount, message):
+
 
 
 @client.event
