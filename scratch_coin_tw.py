@@ -416,10 +416,10 @@ def register_shop_listener(shop_id):
             return "Error:|You can only accept charges sent to you.|Try putting in the correct ID number."
         status = give(username,sent_by, amount)
         if status == "Success":
-            add_notification(sent_by, f"\"{username}\" payed you {amount}SC for the charge \"{message}\".")
+            add_notification(sent_by, f"\"{username}\" paid you {amount}SC for the charge \"{message}\".")
             cursor.execute("DELETE FROM charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
             db.commit()
-            return f"Success|Successfully payed the charge {charge_id}."
+            return f"Success|Successfully paid the charge {charge_id}."
         else:
             return f"Failed|Failed to pay the charge {charge_id}.|If this continues hapenning and you are unsure why, ask me in the comments."
 
@@ -521,7 +521,7 @@ def register_shop_listener(shop_id):
         print(f"[{get_time()}] Added project {add_shop_id}")
         register_shop_listener(str(add_shop_id))
 
-        return f"Success|Successfully integrated your shop into the ScratchCoin shop system. It should now work on TurboWarp.|https://www.turbowarp.org/{add_shop_id}"
+        return f"Success|Successfully integrated your shop into the ScratchCoin shop system. It should now work on TurboWarp."
 
     
     @client.event
