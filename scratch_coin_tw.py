@@ -498,7 +498,8 @@ def register_shop_listener(shop_id):
         username = username.lower()
 
         if shop_id != 1385838253:
-            return "You can only register shops in the main project"
+            print(f"Shop id: {shop_id}")
+            return "Error|You can only register shops in the main project"
 
         project_author = sa.get_project(add_shop_id).author().username.lower()
 
