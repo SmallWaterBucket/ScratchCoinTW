@@ -354,7 +354,7 @@ def get_charges(username):
         return_str+="You haven't been charged yet.|After you are charged by a shop or another user, the charge will appear here."
     return return_str
 
-
+@client.request
 def get_charge(charge_id, username):
     db = get_db()
     cursor = db.cursor()
