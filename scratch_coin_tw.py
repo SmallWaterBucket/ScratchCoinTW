@@ -386,6 +386,7 @@ def accept_charge(username, charge_id):
     if status == "Success":
         add_notification(sent_by, f"\"{username}\" payed you {amount}SC for the charge \"{message}\".")
         cursor.execute("DELETE FROM charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
+        db.commit()
         return f"Success|Successfully payed the charge {charge_id}."
     else:
         return f"Failed|Failed to pay the charge {charge_id}.|If this continues hapenning and you are unsure why, ask me in the comments."
@@ -403,6 +404,7 @@ def cancel_charge(username, charge_id):
     if sent_to != username.lower():
         return "Error:|You can only cancel charges sent to you.|Try putting in the correct ID number."
     cursor.execute("DELETE FROM charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
+    db.commit()
     return f"Success|Successfully canceled the charge {charge_id}."
 
 @client.request
