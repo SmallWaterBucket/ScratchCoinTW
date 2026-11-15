@@ -222,7 +222,7 @@ def register_shop_listener(shop_id):
         if agreed_to_terms(username) == "0":
             return "Error|You must first agree to the Terms of Use until doing anything else."
 
-        if is_blocked == "1":
+        if is_blocked(username) == "1":
             return "You are blocked.|You cannot do anything in Scratch Coin as you have been banned for violating the Terms of Service.|If you think you have been banned without doing anything against the ToS you can always appeal in the comments.|-SAMURAI228"
 
         if not sa.get_user(recepient):
@@ -347,7 +347,7 @@ def register_shop_listener(shop_id):
         if agreed_to_terms(username) == "0":
             return "Error:|You must first agree to the Terms of Use until doing anything else."
 
-        if is_blocked == "1":
+        if is_blocked(username) == "1":
                 return "You are blocked.|You cannot do anything in Scratch Coin as you have been banned for violating the Terms of Service.|If you think you have been banned without doing anything against the ToS you can always appeal in the comments.|-SAMURAI228"
 
         if not sa.get_user(charge_who):
@@ -400,7 +400,7 @@ def register_shop_listener(shop_id):
     def accept_charge(username, charge_id):
         username = username.lower()
 
-        if is_blocked == "1":
+        if is_blocked(username) == "1":
             return "You are blocked.|You cannot do anything in Scratch Coin as you have been banned for violating the Terms of Service.|If you think you have been banned without doing anything against the ToS you can always appeal in the comments.|-SAMURAI228"
 
         db = get_db()
@@ -425,7 +425,7 @@ def register_shop_listener(shop_id):
     def cancel_charge(username, charge_id):
         username = username.lower()
 
-        if is_blocked == "1":
+        if is_blocked(username) == "1":
             return "You are blocked.|You cannot do anything in Scratch Coin as you have been banned for violating the Terms of Service.|If you think you have been banned without doing anything against the ToS you can always appeal in the comments.|-SAMURAI228"
 
         db = get_db()
@@ -532,6 +532,7 @@ cursor = db.cursor()
 cursor.execute("SELECT project_id from projects;")
 projects = cursor.fetchall()
 for loop_project in projects:
+    print(f"Registering listener for {str(loop_project[0])}")
     register_shop_listener(str(loop_project[0]))
 
 print(f"[{get_time()}] Connected to all {len(projects) - 1} shops")
