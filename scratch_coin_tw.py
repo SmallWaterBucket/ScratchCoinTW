@@ -133,7 +133,7 @@ def on_message(message):
             status = disable_smart_notifications(username)
 
             response = (
-                    f"Successfully disabled this service. If you ever wish to re-enable it, respond to this message with \"ENABLE\". IGNORE THIS: {random_text(50)}"
+                    f"Successfully disabled this service for {username}. If you ever wish to re-enable it, respond to this message with \"ENABLE\". IGNORE THIS: {random_text(50)}"
                 if status else
                     f"Failed to disable this service, please contact @SAMURAI228. IGNORE THIS: {random_text(50)}"
             )
@@ -143,7 +143,7 @@ def on_message(message):
             status = enable_smart_notifications(username)
 
             response = (
-                    f"Successfully enabled this service. If you ever wish to re-disable it, respond to this message with \"DISABLE\". IGNORE THIS: {random_text(50)}"
+                    f"Successfully enabled this service for {username}. If you ever wish to re-disable it, respond to this message with \"DISABLE\". IGNORE THIS: {random_text(50)}"
                 if status else
                     f"Failed to enable this service, please contact @SAMURAI228. IGNORE THIS: {random_text(50)}"
             )
