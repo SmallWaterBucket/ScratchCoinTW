@@ -12,8 +12,8 @@ import random
 
 verificators = {}
 project = sa.get_project("1366081158") # project to post verification codes in
-#comment_session = sa.login("-scratch_coin-", open("/home/ubuntu/scratch_password.txt", 'r').read().strip()) #login for smart notifications
-#events = comment_session.connect_message_events()
+comment_session = sa.login("-scratch_coin-", open("/home/ubuntu/scratch_password.txt", 'r').read().strip()) #login for smart notifications
+events = comment_session.connect_message_events()
 
 
 @dataclass
@@ -45,7 +45,7 @@ def smart_notifications_enabled(username):
     username = username.lower()
     cursor = db.cursor()
     cursor.execute("SELECT smart_notifications FROM balances where username = %s;",(username,)) # DB format: (id, username, balance, read_notifications, accepted, blocked, smart_notifications)
-    smart_notifications = cursor.fetchall()[0]
+    smart_notifications = cursor.fetchone()[0]
     return smart_notifications
 
 def disable_smart_notifications(username):
@@ -64,46 +64,69 @@ def enable_smart_notifications(username):
     db.commit()
     return smart_notifications_enabled(username) == 1
 
-#def post_smart_notification(username, notification):
-#    if not smart_notifications_enabled:
-#        return "Failed"
-#    #user = comment_session.connect_user(username)
-#    user.post_comment(f"(This is an automated message). You have received a new notification in the ScratchCoin project: \"{notification}\". If you wish to disable this service please respond to this message with \"DISABLE\"")
-#    return "Success"
+def post_smart_notification(username, notification):
+    if not smart_notifications_enabled(username):
+        return "Failed"
+    profile = comment_session.connect_user(username)
+    profile.post_comment(f"[ScratchCoin notification]. You have received a new notification in the ScratchCoin project: \"{notification}\". If you wish to disable this service please respond to this message with \"DISABLE\"")
+    return "Success"
 
-#@events.event
-#def on_message(message):
-#    user = message.actor_username
-#    comment = message.comment_fragment
-#
-#    id = message.comment_obj_id
-#
-#    comment_obj = user.comment_by_id(id)
-#
-#    if ("DISABLE" in comment or "\"DISABLE\"" in comment):
-#        status = disable_smart_notifications(user)
-#
-#        if not status:
-#            comment_obj.reply(f"Failed to disable this service, please contact @SAMURAI228. IGNORE THIS: {random_text(50)}")
-#            return
-#
-#        comment_obj.reply(f"Successfully disabled this service. If you ever wish to re-enable it, respond to this message with \"ENABLE\". IGNORE THIS: {random_text(50)}")
-#    
-#
-#    if ("ENABLE" in comment or "\"ENABLE\"" in comment):
-#        status = enable_smart_notifications(user)
-#
-#        if not status:
-#            comment_obj.reply(f"Failed to enable this service, please contact @SAMURAI228. IGNORE THIS: {random_text(50)}")
-#            return
-#
-#        comment_obj.reply(f"Successfully enabled this service. If you ever wish to re-disable it, respond to this message with \"DISABLE\". IGNORE THIS: {random_text(50)}")
-#
-#    return
+@events.event
+def on_message(message):
+    if message.type != "addcoment":
+        return
 
-#@events.event
-#def on_ready():
-#    print("Message listener ready!")
+    command = message.comment_fragment.strip().upper()
+
+    if command not in ("ENABLE", "DISABLE"):
+        return
+
+    try:
+        comment = message.target()
+
+        if not comment:
+            return
+
+        parent = comment.parent_comment()
+
+        if not parent:
+            return
+
+        if parent.author_name != "-scratch_coin-":
+            return
+
+        username = message.actor_username
+
+        response = f"Error failed to execute command {command}. IGNORE THIS: {random_text(50)}"
+
+        if command == "DISABLE":
+            status = disable_smart_notifications(username)
+
+            response = (
+                    f"Successfully disabled this service. If you ever wish to re-enable it, respond to this message with \"ENABLE\". IGNORE THIS: {random_text(50)}"
+                if status else
+                    f"Failed to disable this service, please contact @SAMURAI228. IGNORE THIS: {random_text(50)}"
+            )
+
+
+        if command == "ENABLE":
+            status = enable_smart_notifications(username)
+
+            response = (
+                    f"Successfully enabled this service. If you ever wish to re-disable it, respond to this message with \"DISABLE\". IGNORE THIS: {random_text(50)}"
+                if status else
+                    f"Failed to enable this service, please contact @SAMURAI228. IGNORE THIS: {random_text(50)}"
+            )
+
+        comment.reply(response)
+
+    except Exception as e:
+        print(f"[{get_time()}] Smart notification on_message error: {e!r}")
+
+    return
+@events.event
+def on_ready():
+    print("Message listener ready!")
         
 def random_text(length):
     ret = ""
@@ -119,6 +142,8 @@ def add_notification(username, notification):
     cursor = db.cursor()
     cursor.execute("INSERT INTO notifications (username, message) values (%s, %s);",(username,notification,)) # DB format: (id, username, balance, read_notifications, accepted)
     db.commit()
+    post_smart_notification(username, notification)
+
 def set_balance(username, amount):
     add_new_user_if_non_existant(username)
     username = username.lower()
@@ -641,4 +666,4 @@ for loop_project in projects:
     register_shop_listener(str(loop_project[0]))
 
 print(f"[{get_time()}] Connected to all {len(projects) - 1} shops")
-#events.start
+events.start()
