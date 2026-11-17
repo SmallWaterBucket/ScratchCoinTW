@@ -9,6 +9,7 @@ from primes.primes import is_prime, generate_prime
 import MySQLdb
 import string
 import random
+from scratchattach.utils.requests import requests as scratch_http
 
 verificators = {}
 project = sa.get_project("1366081158") # project to post verification codes in
@@ -26,17 +27,18 @@ from scratchattach.utils.requests import requests as scratch_http
 
 original_check_response = scratch_http.check_response
 
-def debug_check_response(response):
-    print("\n========== SCRATCH HTTP RESPONSE ==========")
-    print("Status:", response.status_code)
-    print("URL:", response.url)
-    print("Content-Type:", response.headers.get("Content-Type"))
-    print("Response:", repr(response.text[:2000]))
-    print("===========================================\n")
+def patched_check_response(response):
+    # Scratch's profile-comment endpoint returns HTML on success.
+    if (
+        response.status_code == 200
+        and "/site-api/comments/user/" in response.url
+        and response.url.endswith("/add/")
+    ):
+        return
 
     return original_check_response(response)
 
-scratch_http.check_response = debug_check_response
+scratch_http.check_response = patched_check_response
 
 
 #internal functions
@@ -82,7 +84,7 @@ def post_smart_notification(username, notification):
     if not smart_notifications_enabled(username):
         return "Failed"
     profile = comment_session.connect_user(username)
-    profile.post_comment(f"[ScratchCoin notification]. You have received a new notification in the ScratchCoin project: \"{notification}\". If you wish to disable this service please respond to this message with \"DISABLE\"")
+    profile.post_comment(f"[ScratchCoin notification]. You have received a new notification in the ScratchCoin project: \" {notification} \". If you wish to disable this service please respond to this message with \"DISABLE\"")
     return "Success"
 
 @events.event
@@ -156,7 +158,10 @@ def add_notification(username, notification):
     cursor = db.cursor()
     cursor.execute("INSERT INTO notifications (username, message) values (%s, %s);",(username,notification,)) # DB format: (id, username, balance, read_notifications, accepted)
     db.commit()
-    post_smart_notification(username, notification)
+    try:
+        post_smart_notification(username, notification)
+    except Exception as e:
+        print(f"Failed to post Scratch notification for {username}: {e}")
 
 def set_balance(username, amount):
     add_new_user_if_non_existant(username)
