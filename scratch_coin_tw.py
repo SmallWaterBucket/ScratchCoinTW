@@ -283,7 +283,7 @@ def register_shop_listener(shop_id):
             product = prime1 * prime2 # multiplies primes sent by the user
             #print(f"DEBUG:\nprime1: {prime1},\nprime2: {prime2},\ncurrent_product: {product},\nverificator.next_product: {comment},\nnext_product: {next_product}")
             if int(product) == int(comment): # checks the product
-                expires_at = int(time.time()) + 10 * 60 #adds ten minures
+                expires_at = int(time.time()) + 5 * 60 #adds five minutes
                 verificators[username] = Verificator(int(next_product), expires_at) # adds a verificator item
                 print(f"[{get_time()}] Authenticated user {username}")
                 return "Authenticated"
@@ -321,7 +321,7 @@ def register_shop_listener(shop_id):
             print(f"[{get_time()}] Verificator for user {username} expired in function: \"{function_name}\"")
             return "Expired"
         if int(current_product) == int(verificator.next_product):
-            expires_at = int(time.time()) + 10 * 60 #adds ten minures
+            expires_at = int(time.time()) + 5 * 60 #adds five minures
             verificators[username] = Verificator(int(next_product), expires_at)
             print(f"[{get_time()}] Verified user \"{username}\" for function: \"{function_name}\"")
             return "Verified"
