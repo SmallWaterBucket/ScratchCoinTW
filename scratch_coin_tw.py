@@ -93,6 +93,8 @@ def post_smart_notification(username, notification):
 
 @events.event
 def on_message(message):
+    print(f"[{get_time()}] Received message:\ntype = {message.type}, actor = {message.actor}")
+
     if message.type != "addcomment":
         return
 
@@ -102,9 +104,15 @@ def on_message(message):
         return
 
     try:
-        comment = message.target()
+        profile = comment_session.connect_user(message.comment_obj_title)
+
+        comment = profile.comment_by_id(message.comment_id)
 
         if not comment:
+            print(f"[{get_time()}] Couldn't get comment")
+            return
+
+        if message.comment_type != 1:
             return
 
         parent = comment.parent_comment()
@@ -112,12 +120,14 @@ def on_message(message):
         if not parent:
             return
 
-        if parent.author_name != "-scratch_coin-":
+        if parent.author_name.lower() != "-scratch_coin-":
             return
 
-        username = message.actor_username
+        username = message.actor_username.lower()
 
         response = f"Error failed to execute command {command}. IGNORE THIS: {random_text(50)}"
+
+
 
         if command == "DISABLE":
             status = disable_smart_notifications(username)
@@ -140,10 +150,13 @@ def on_message(message):
 
         comment.reply(response)
 
+        print(f"[{get_time()}] User {username} executed command {command}: {status}")
+
     except Exception as e:
         print(f"[{get_time()}] Smart notification on_message error: {e!r}")
 
     return
+
 @events.event
 def on_ready():
     print("Message listener ready!")
