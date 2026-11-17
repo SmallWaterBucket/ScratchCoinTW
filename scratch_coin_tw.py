@@ -7,10 +7,14 @@ from dataclasses import dataclass
 from functools import wraps
 from primes.primes import is_prime, generate_prime
 import MySQLdb
-
+import string
+import random
 
 verificators = {}
 project = sa.get_project("1366081158") # project to post verification codes in
+comment_session = sa.login("-scratch_coin-", open("/home/ubuntu/scratch_password.txt", 'f').read().strip()) #login for smart notifications
+events = comment_session.connect_message_events()
+
 
 @dataclass
 class Verificator:
@@ -35,6 +39,80 @@ def get_db():
         database="scratch"
     )
     return db
+
+def smart_notifications_enabled(username):
+    add_new_user_if_non_existant(username)
+    username = username.lower()
+    cursor = db.cursor()
+    cursor.execute("SELECT smart_notifications FROM balances where username = %s;",(username,)) # DB format: (id, username, balance, read_notifications, accepted, blocked, smart_notifications)
+    smart_notifications = cursor.fetchall()[0]
+    return smart_notifications
+
+def disable_smart_notifications(username):
+    add_new_user_if_non_existant(username)
+    username = username.lower()
+    cursor = db.cursor()
+    cursor.execute("UPDATE balances SET smart_notifications = 0 WHERE username = %s;",(username,)) # DB format: (id, username, balance, read_notifications, accepted, blocked, smart_notifications)
+    db.commit()
+    return smart_notifications_enabled(username) == 0
+
+def enable_smart_notifications(username):
+    add_new_user_if_non_existant(username)
+    username = username.lower()
+    cursor = db.cursor()
+    cursor.execute("UPDATE balances SET smart_notifications = 1 WHERE username = %s;",(username,)) # DB format: (id, username, balance, read_notifications, accepted, blocked, smart_notifications)
+    db.commit()
+    return smart_notifications_enabled(username) == 1
+
+def post_smart_notification(username, notification):
+    if not smart_notifications_enabled:
+        return "Failed"
+    user = comment_session.connect_user(username)
+    user.post_comment(f"(This is an automated message). You have received a new notification in the ScratchCoin project: \"{notification}\". If you wish to disable this service please respond to this message with \"DISABLE\"")
+    return "Success"
+
+@events.event
+def on_message(message):
+    user = message.actor_username
+    comment = message.comment_fragment
+
+    id = message.comment_obj_id
+
+    comment_obj = user.comment_by_id(id)
+
+    if ("DISABLE" in comment or "\"DISABLE\"" in comment):
+        status = disable_smart_notifications(user)
+
+        if not status:
+            comment_obj.reply(f"Failed to disable this service, please contact @SAMURAI228. IGNORE THIS: {random_text(50)}")
+            return
+
+        comment_obj.reply(f"Successfully disabled this service. If you ever wish to re-enable it, respond to this message with \"ENABLE\". IGNORE THIS: {random_text(50)}")
+    
+
+    if ("ENABLE" in comment or "\"ENABLE\"" in comment):
+        status = enable_smart_notifications(user)
+
+        if not status:
+            comment_obj.reply(f"Failed to enable this service, please contact @SAMURAI228. IGNORE THIS: {random_text(50)}")
+            return
+
+        comment_obj.reply(f"Successfully enabled this service. If you ever wish to re-disable it, respond to this message with \"DISABLE\". IGNORE THIS: {random_text(50)}")
+
+    return
+
+@events.event
+def on_ready():
+    print("Message listener ready!")
+        
+def random_text(length):
+    ret = ""
+    for i in range(length):
+        ret += random.choice(string.ascii_letters)
+
+    return ret
+
+
 def add_notification(username, notification):
     username = username.lower()
     db = get_db()
@@ -64,7 +142,7 @@ def add_new_user_if_non_existant(username):
     cursor.execute("SELECT * from balances where username = %s", (username,))
     response = cursor.fetchone()
     if not response:
-        cursor.execute("INSERT INTO balances (username, balance, read_notifications, accepted) values (%s, 100,0,0);", (username,))
+        cursor.execute("INSERT INTO balances (username, balance, read_notifications, accepted, blocked, smart_notifications) values (%s, 100,0,0,0,1);", (username,))
         db.commit()
 def give(username, recepient, amount):
     if int(get_balance(username)) < amount:
@@ -229,7 +307,7 @@ def register_shop_listener(shop_id):
         if is_blocked(username) == "1":
             return "You are blocked.|You cannot do anything in Scratch Coin as you have been banned for violating the Terms of Service.|If you think you have been banned without doing anything against the ToS you can always appeal in the comments.|-SAMURAI228"
 
-        if not sa.get_user(recepient):
+        if not user_exists(recepient):
             return f"Error|User \"{recepient}\" doesn't exist."
 
         amount = int(amount)
@@ -256,6 +334,9 @@ def register_shop_listener(shop_id):
     @client.request
     def agreed_to_terms_request(username):
         return agreed_to_terms(username)
+
+    def user_exists(username):
+        return sa.get_user(username).does_exist()
 
     @client.request
     @verified_request
@@ -317,6 +398,19 @@ def register_shop_listener(shop_id):
         return f"{return_str};"
 
     @client.request
+    def get_logs():
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT username, message FROM notifications;")
+        notifications = cursor.fetchall()
+        return_str = "Logs:|"
+        i = 1
+        for username, message in notifications:
+            return_str+=f"{i}) Sent to: {username}|{message}||"
+            i+=1
+        return f"{return_str};"
+
+    @client.request
     def read_notifications_question(username):
         username = username.lower()
         db = get_db()
@@ -354,7 +448,7 @@ def register_shop_listener(shop_id):
         if is_blocked(username) == "1":
                 return "You are blocked.|You cannot do anything in Scratch Coin as you have been banned for violating the Terms of Service.|If you think you have been banned without doing anything against the ToS you can always appeal in the comments.|-SAMURAI228"
 
-        if not sa.get_user(charge_who):
+        if not user_exists(charge_who):
             return f"Error|User \"{charge_who}\" doesn't exist."
 
         username = username.lower()
@@ -407,6 +501,9 @@ def register_shop_listener(shop_id):
         if is_blocked(username) == "1":
             return "You are blocked.|You cannot do anything in Scratch Coin as you have been banned for violating the Terms of Service.|If you think you have been banned without doing anything against the ToS you can always appeal in the comments.|-SAMURAI228"
 
+        if agreed_to_terms(username) == "0":
+            return "Error:|You must first agree to the Terms of Use until doing anything else."
+
         db = get_db()
         cursor = db.cursor()
         cursor.execute("SELECT sent_by, sent_to, amount, message from charges WHERE id = %s",(charge_id,)) # DB format: (id, sent_by, sent_to, amount, message)
@@ -431,6 +528,9 @@ def register_shop_listener(shop_id):
 
         if is_blocked(username) == "1":
             return "You are blocked.|You cannot do anything in Scratch Coin as you have been banned for violating the Terms of Service.|If you think you have been banned without doing anything against the ToS you can always appeal in the comments.|-SAMURAI228"
+
+        if agreed_to_terms(username) == "0":
+            return "Error:|You must first agree to the Terms of Use until doing anything else."
 
         db = get_db()
         cursor = db.cursor()
@@ -479,10 +579,10 @@ def register_shop_listener(shop_id):
         if is_blocked(sent_by) == "1":
                 return "You are blocked.|You cannot do anything in Scratch Coin as you have been banned for violating the Terms of Service.|If you think you have been banned without doing anything against the ToS you can always appeal in the comments.|-SAMURAI228"
 
-        if not sa.get_user(sent_to):
+        if not user_exists(sent_to):
             return f"Error|User \"{sent_to}\" doesn't exist."
 
-        if not sa.get_user(sent_by):
+        if not user_exists(sent_by):
                 return f"Error|User \"{sent_by}\" doesn't exist."
         
 
@@ -541,3 +641,4 @@ for loop_project in projects:
     register_shop_listener(str(loop_project[0]))
 
 print(f"[{get_time()}] Connected to all {len(projects) - 1} shops")
+events.start
