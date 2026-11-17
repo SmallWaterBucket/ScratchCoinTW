@@ -659,6 +659,11 @@ def register_shop_listener(shop_id):
 
     @client.request
     @verified_request
+    def extend(username, apple):
+        return "Success"
+
+    @client.request
+    @verified_request
     def add_shop(username, add_shop_id):
         username = username.lower()
 
