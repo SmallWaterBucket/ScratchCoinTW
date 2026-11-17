@@ -88,6 +88,7 @@ def post_smart_notification(username, notification):
         return "Failed"
     profile = comment_session.connect_user(username)
     profile.post_comment(f"[ScratchCoin notification]. You have received a new notification in the ScratchCoin project: \" {notification} \". If you wish to disable this service please respond to this message with \"DISABLE\"")
+    print(f"[{get_time()}] Successfully posted smart notification to {username}")
     return "Success"
 
 @events.event
