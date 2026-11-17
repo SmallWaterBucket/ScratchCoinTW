@@ -22,7 +22,21 @@ class Verificator:
     expires_at: int
 
 
+from scratchattach.utils.requests import requests as scratch_http
 
+original_check_response = scratch_http.check_response
+
+def debug_check_response(response):
+    print("\n========== SCRATCH HTTP RESPONSE ==========")
+    print("Status:", response.status_code)
+    print("URL:", response.url)
+    print("Content-Type:", response.headers.get("Content-Type"))
+    print("Response:", repr(response.text[:2000]))
+    print("===========================================\n")
+
+    return original_check_response(response)
+
+scratch_http.check_response = debug_check_response
 
 
 #internal functions
