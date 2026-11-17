@@ -12,7 +12,7 @@ import random
 
 verificators = {}
 project = sa.get_project("1366081158") # project to post verification codes in
-comment_session = sa.login("-scratch_coin-", open("/home/ubuntu/scratch_password.txt", 'f').read().strip()) #login for smart notifications
+comment_session = sa.login("-scratch_coin-", open("/home/ubuntu/scratch_password.txt", 'r').read().strip()) #login for smart notifications
 events = comment_session.connect_message_events()
 
 
