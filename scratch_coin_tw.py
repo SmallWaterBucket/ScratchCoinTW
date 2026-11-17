@@ -28,7 +28,7 @@ from scratchattach.utils.requests import requests as scratch_http
 original_check_response = scratch_http.check_response
 
 def patched_check_response(response):
-    print("PATCH called", response.status_code, response.url)
+    #print("PATCH called", response.status_code, response.url)
 
     # Scratch's profile-comment endpoint returns HTML on success.
     if (
@@ -36,7 +36,7 @@ def patched_check_response(response):
         and "/site-api/comments/user/" in response.url
         and response.url.endswith("/add/")
     ):
-        print("SKIPPING COMMENT RESPONSE PARSING")
+        #print("SKIPPING COMMENT RESPONSE PARSING")
         return
 
     return original_check_response(response)
@@ -93,7 +93,7 @@ def post_smart_notification(username, notification):
 
 @events.event
 def on_message(message):
-    if message.type != "addcoment":
+    if message.type != "addcomment":
         return
 
     command = message.comment_fragment.strip().upper()
