@@ -397,7 +397,10 @@ def register_shop_listener(shop_id):
         return agreed_to_terms(username)
 
     def user_exists(username):
-        return sa.get_user(username).does_exist()
+        try:
+            return sa.get_user(username).does_exist()
+        except:
+            return False
 
     @client.request
     @verified_request
