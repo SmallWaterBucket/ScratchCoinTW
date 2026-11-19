@@ -319,7 +319,7 @@ def register_shop_listener(shop_id):
         if verificator.expires_at < int(time.time()): # checks whether the verificator had expired
             verificators.pop(username)
             print(f"[{get_time()}] Verificator for user {username} expired in function: \"{function_name}\"")
-            return "Expired"
+            return "Expired|Please restart the project"
         if int(current_product) == int(verificator.next_product):
             expires_at = int(time.time()) + 5 * 60 #adds five minures
             verificators[username] = Verificator(int(next_product), expires_at)
@@ -360,10 +360,10 @@ def register_shop_listener(shop_id):
     @verified_request
     def give_request(username, recepient, amount, message):
         if not is_number(amount):
-            return "Error|Please enter only numbers"
+            return "Error|Please enter only numbers;"
 
         if agreed_to_terms(username) == "0":
-            return "Error|You must first agree to the Terms of Use until doing anything else."
+            return "Error|You must first agree to the Terms of Use until doing anything else.;"
 
         if is_blocked(username) == "1":
             return "You are blocked.|You cannot do anything in Scratch Coin as you have been banned for violating the Terms of Service.|If you think you have been banned without doing anything against the ToS you can always appeal in the comments.|-SAMURAI228"
@@ -660,7 +660,7 @@ def register_shop_listener(shop_id):
     @client.request
     @verified_request
     def extend(username, apple):
-        return "Success"
+        return "IGNORE"
 
     @client.request
     @verified_request
