@@ -668,6 +668,10 @@ def register_shop_listener(shop_id):
         return "IGNORE"
 
     @client.request
+    def blocked(username):
+        return str(is_blocked(username))
+
+    @client.request
     @verified_request
     def add_shop(username, add_shop_id):
         username = username.lower()
