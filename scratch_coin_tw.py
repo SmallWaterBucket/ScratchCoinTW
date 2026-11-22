@@ -287,6 +287,7 @@ def register_shop_listener(shop_id):
 
     @request
     def ping(): #called when client receives request
+        print(f"[{get_time()}] PING")
         return "pong" #sends back 'pong' to the Scratch project
 
     def platform_aware(func):
@@ -740,7 +741,7 @@ def register_shop_listener(shop_id):
     def extend(username, apple):
         return "IGNORE"
 
-    @client.request
+    @request
     def blocked(username):
         return str(is_blocked(username))
 
@@ -779,6 +780,37 @@ def register_shop_listener(shop_id):
     @scratch_client.event
     def on_ready():
         print(f"Scratch request handler for project {shop_id} is running")
+
+
+    @client.event
+    def on_request(request):
+        print(f"[{get_time()}] TW RECEIVED: {request.name}, args={request.arguments}")
+
+    @scratch_client.event
+    def on_request(request):
+        print(f"[{get_time()}] SCRATCH RECEIVED: {request.name}, args={request.arguments}")
+
+    @client.event
+    def on_unknown_request(request):
+        print(f"[{get_time()}] TW UNKNOWN REQUEST: {request.name}")
+
+    @scratch_client.event
+    def on_unknown_request(request):
+        print(f"[{get_time()}] SCRATCH UNKNOWN REQUEST: {request.name}")
+
+    @client.event
+    def on_error(request, e):
+        print(f"[{get_time()}] TW REQUEST ERROR ({request.name}): {e!r}")
+
+    @scratch_client.event
+    def on_error(request, e):
+        print(f"[{get_time()}] SCRATCH REQUEST ERROR ({request.name}): {e!r}")
+
+    print(f"TW registered requests: {list(client._requests.keys())}")
+    print(f"Scratch registered requests: {list(scratch_client._requests.keys())}")
+
+    client.start(thread=True)
+    scratch_client.start(thread=True)
 
     client.start(thread=True) # thread=True is an optional argument. It makes the cloud requests handler run in a thread
     scratch_client.start(thread=True)
