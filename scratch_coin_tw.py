@@ -177,10 +177,10 @@ def add_notification(username, notification):
     cursor = db.cursor()
     cursor.execute("INSERT INTO notifications (username, message) values (%s, %s);",(username,notification,)) # DB format: (id, username, balance, read_notifications, accepted)
     db.commit()
-    try:
-        post_smart_notification(username, notification)
-    except Exception as e:
-        print(f"Failed to post Scratch notification for {username}: {e}")
+    #try:
+        #post_smart_notification(username, notification)
+    #except Exception as e:
+        #print(f"Failed to post Scratch notification for {username}: {e}")
 
 def set_balance(username, amount):
     add_new_user_if_non_existant(username)
@@ -518,6 +518,7 @@ def register_shop_listener(shop_id):
 
     @request
     def get_notifications(username):
+        return "Notifications are disabled|Unfortunately notifications have been turned off for now to stay compliant with Scratch comunity guidelines. They will be brought back later on in a different manner."
         username = username.lower()
         db = get_db()
         cursor = db.cursor()
@@ -532,6 +533,7 @@ def register_shop_listener(shop_id):
 
     @request
     def get_logs():
+        return ":(| Logs have been turned off in order to stay compliant with Scratch's community guidelines."
         db = get_db()
         cursor = db.cursor()
         cursor.execute("SELECT username, message FROM notifications;")
@@ -737,6 +739,10 @@ def register_shop_listener(shop_id):
     @verified_request
     def extend(username, apple):
         return "IGNORE"
+
+    @client.request
+    def blocked(username):
+        return str(is_blocked(username))
 
     @request
     @verified_request
