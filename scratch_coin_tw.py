@@ -782,30 +782,32 @@ def register_shop_listener(shop_id):
         print(f"Scratch request handler for project {shop_id} is running")
 
 
-    @client.event
-    def on_request(request):
-        print(f"[{get_time()}] TW RECEIVED: {request.name}, args={request.arguments}")
+        @client.event
+    def on_request(received):
+        print(
+            f"[{get_time()}] TW RECEIVED: "
+            f"{received.request.name}, "
+            f"requester={received.requester}, "
+            f"args={received.arguments}"
+        )
 
     @scratch_client.event
-    def on_request(request):
-        print(f"[{get_time()}] SCRATCH RECEIVED: {request.name}, args={request.arguments}")
+    def on_request(received):
+        print(
+            f"[{get_time()}] SCRATCH RECEIVED: "
+            f"{received.request.name}, "
+            f"requester={received.requester}, "
+            f"args={received.arguments}"
+        )
 
     @client.event
-    def on_unknown_request(request):
-        print(f"[{get_time()}] TW UNKNOWN REQUEST: {request.name}")
+    def on_error(received, error):
+        print(f"[{get_time()}] TW ERROR: {error!r}")
 
     @scratch_client.event
-    def on_unknown_request(request):
-        print(f"[{get_time()}] SCRATCH UNKNOWN REQUEST: {request.name}")
-
-    @client.event
-    def on_error(request, e):
-        print(f"[{get_time()}] TW REQUEST ERROR ({request.name}): {e!r}")
-
-    @scratch_client.event
-    def on_error(request, e):
-        print(f"[{get_time()}] SCRATCH REQUEST ERROR ({request.name}): {e!r}")
-
+    def on_error(received, error):
+        print(f"[{get_time()}] SCRATCH ERROR: {error!r}")
+    
     print(f"TW registered requests: {list(client._requests.keys())}")
     print(f"Scratch registered requests: {list(scratch_client._requests.keys())}")
 
