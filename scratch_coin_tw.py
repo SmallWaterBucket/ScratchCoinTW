@@ -782,7 +782,7 @@ def register_shop_listener(shop_id):
         print(f"Scratch request handler for project {shop_id} is running")
 
 
-        @client.event
+    @client.event
     def on_request(received):
         print(
             f"[{get_time()}] TW RECEIVED: "
