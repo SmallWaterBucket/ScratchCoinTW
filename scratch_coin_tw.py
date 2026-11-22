@@ -14,6 +14,8 @@ from scratchattach.utils.requests import requests as scratch_http
 verificators = {}
 project = sa.get_project("1366081158") # project to post verification codes in
 comment_session = sa.login("-scratch_coin-", open("/home/ubuntu/scratch_password.txt", 'r').read().strip()) #login for smart notifications
+#scratch_cloud = comment_session.connect_cloud("1385838253")
+#scratch_client = scratch_cloud.requests()
 events = comment_session.connect_message_events()
 
 
@@ -250,23 +252,68 @@ def get_balance(username):
 
 
 
-
-
-
 # shop listener
 
 def register_shop_listener(shop_id):
+    shop_id = str(shop_id)
+
     cloud = sa.get_tw_cloud(shop_id) # the shop listener
     client = cloud.requests()
 
+    scratch_cloud = comment_session.connect_cloud(shop_id)
+    scratch_client = scratch_cloud.requests()
+
     shop_owner = sa.get_project(shop_id).author().username.lower()
 
-    @client.request
+    def request(func):
+        if getattr(func, "_platform_aware", False):
+            @wraps(func)
+            def scratch_wrapper(*args):
+                return func(*args, platform="scratch")
+
+            @wraps(func)
+            def tw_wrapper(*args):
+                return func(*args, platform="turbowarp")
+
+        else:
+            scratch_wrapper = func
+            tw_wrapper = func
+        
+
+        client.request(tw_wrapper)
+        scratch_client.request(scratch_wrapper)
+
+        return func
+
+    @request
     def ping(): #called when client receives request
         return "pong" #sends back 'pong' to the Scratch project
 
-    @client.request
-    def authenticate(username, prime1, prime2, next_product):
+    def platform_aware(func):
+        func._platform_aware = True
+        return func
+
+    @request
+    @platform_aware
+    def authenticate(username, prime1, prime2, next_product,platform):
+
+        if platform == "scratch":
+            try:
+                real_username = scratch_client.get_requester()
+            
+                if real_username:
+                    if username.lower() == real_username.lower():
+                        print(f"[{get_time()}] Authenticated user \"{username}\"")
+                        return "Authenticated"
+                    else:
+                        print(f"[{get_time()}] Failed to authenticate user: \"{username}\"")
+                        return f"Failed|Failed to authenticate user: \"{username}\".|Something went wrong, please report it in the comments.|After that restart the project."
+                    
+            except Exception as e:
+                print(f"Scratch authentication error: {e!r}")
+                return "Failed|Could not authenticate your Scratch identity.|If this continues happening use TurboWarp."
+
+
         comments = project.comments(limit=100)
         comment = ""
         for loop_comment in comments: # finds the laters comment from a user
@@ -292,15 +339,37 @@ def register_shop_listener(shop_id):
 
     def verified_request(func):
         @wraps(func)
-        def wrapper(username, prime1, prime2, next_product, *args, **kwargs):
+        def wrapper(username, prime1, prime2, next_product, *args, platform, **kwargs):
             function_name = func.__name__
-            status = verify_user(username, prime1, prime2, next_product,function_name)
+            status = verify_user(username, prime1, prime2, next_product,function_name, platform)
             if status != "Verified":
                 return status
             return func(username, *args, **kwargs)
+
+        wrapper._platform_aware = True
         return wrapper
 
-    def verify_user(username,prime1,prime2,next_product, function_name):
+
+    def verify_user(username,prime1,prime2,next_product, function_name, platform):
+
+        username = username.lower()
+
+        if platform == "scratch":
+            try:
+                real_username = scratch_client.get_requester()
+
+                if real_username:
+                    if username.lower() == real_username.lower():
+                        print(f"[{get_time()}] Verified user \"{username}\" for function: \"{function_name}\"")
+                        return "Verified"
+                    else:
+                        print(f"[{get_time()}] Failed to verify user: \"{username}\" for function: \"{function_name}\"")
+                        return f"Failed|Failed to verify user: \"{username}\" for function: \"{function_name}\".|Something went wrong, please report it in the comments.|After that restart the project."
+                    
+            except Exception as e:
+                print(f"Scratch requester verification error: {e!r}")
+                return "Failed|Could not verify your Scratch identity.|If this continues happening use TurboWarp."
+
         verificator = verificators.get(username)
 
         if verificator is None:
@@ -337,26 +406,26 @@ def register_shop_listener(shop_id):
 
     # Your requests
 
-    @client.request
+    @request
     @verified_request # include this if you want to check for the legitimacy of the sender of the request
     def test(username, text):  # very simple example for how to use the verified requests
         return f"{str(username)} : {str(text)}"
 
-    @client.request
+    @request
     @verified_request # include this if you want to check for the legitimacy of the sender of the request
     def test2(username, text):  # very simple example for how to use the verified requests
         return f"test: {str(username)} : {str(text)}"
 
-    @client.request
+    @request
     def get_balance_request(username):
         print(f"[{get_time()}] Get balance was requested for user \"{username}\"")
         return f"{str(get_balance(username))};"
 
-    @client.request
+    @request
     def balance(username):
         return f"{str(get_balance(username))}"
 
-    @client.request
+    @request
     @verified_request
     def give_request(username, recepient, amount, message):
         if not is_number(amount):
@@ -388,11 +457,11 @@ def register_shop_listener(shop_id):
 
         return f"Server:|Successfully gave {recepient} {amount} SC."
 
-    @client.request
+    @request
     def other_user_balance_request(username):
         return f"Get balance:|{username} has {get_balance(username)} SC."
 
-    @client.request
+    @request
     def agreed_to_terms_request(username):
         return agreed_to_terms(username)
 
@@ -402,7 +471,7 @@ def register_shop_listener(shop_id):
         except:
             return False
 
-    @client.request
+    @request
     @verified_request
     def accept_terms(username, apple):
         add_new_user_if_non_existant(username)
@@ -417,7 +486,7 @@ def register_shop_listener(shop_id):
         response = cursor.fetchone()[0]
         return str(response)
 
-    @client.request
+    @request
     def leaderboard(username):
         username = username.lower()
         db = get_db()
@@ -447,7 +516,7 @@ def register_shop_listener(shop_id):
 
         return return_str
 
-    @client.request
+    @request
     def get_notifications(username):
         username = username.lower()
         db = get_db()
@@ -461,7 +530,7 @@ def register_shop_listener(shop_id):
             i+=1
         return f"{return_str};"
 
-    @client.request
+    @request
     def get_logs():
         db = get_db()
         cursor = db.cursor()
@@ -474,7 +543,7 @@ def register_shop_listener(shop_id):
             i+=1
         return f"{return_str};"
 
-    @client.request
+    @request
     def read_notifications_question(username):
         username = username.lower()
         db = get_db()
@@ -486,7 +555,7 @@ def register_shop_listener(shop_id):
         return f"{read_notifications}|{count}|"
 
 
-    @client.request
+    @request
     @verified_request
     def read_notifications_announcment(username, number):
         username = username.lower()
@@ -496,7 +565,7 @@ def register_shop_listener(shop_id):
         db.commit()
         return "IGNORE"
 
-    @client.request
+    @request
     @verified_request
     def add_charge(username, charge_who, amount, message):
 
@@ -526,7 +595,7 @@ def register_shop_listener(shop_id):
 
         return f"Success|Charged \"{charge_who}\" {amount}SC"
 
-    @client.request
+    @request
     def get_charges(username):
         username = username.lower()
         db = get_db()
@@ -540,7 +609,7 @@ def register_shop_listener(shop_id):
             return_str+="You haven't been charged yet.|After you are charged by a shop or another user, the charge will appear here."
         return f"{return_str};"
 
-    @client.request
+    @request
     def get_charge(charge_id, username):
         db = get_db()
         cursor = db.cursor()
@@ -557,7 +626,7 @@ def register_shop_listener(shop_id):
 
 
 
-    @client.request
+    @request
     @verified_request
     def accept_charge(username, charge_id):
         username = username.lower()
@@ -585,7 +654,7 @@ def register_shop_listener(shop_id):
             return f"Failed|Failed to pay the charge {charge_id}.|If this continues hapenning and you are unsure why, ask me in the comments."
 
 
-    @client.request
+    @request
     @verified_request
     def cancel_charge(username, charge_id):
         username = username.lower()
@@ -607,7 +676,7 @@ def register_shop_listener(shop_id):
         db.commit()
         return f"Success|Successfully canceled the charge {charge_id}."
 
-    @client.request
+    @request
     @verified_request
     def block_user(username, block_who):
         username = username.lower()
@@ -623,10 +692,14 @@ def register_shop_listener(shop_id):
         return f"Success|Successfully blocked {block_who}."
 
 
-    @client.request
+    @request
     def shop_charge(sent_to, amount, message):
 
         sent_by = shop_owner
+
+        if shop_id == "1385838253":
+            return "Error|Why are you trying this?"
+
 
         add_new_user_if_non_existant(sent_by)
         add_new_user_if_non_existant(sent_to)
@@ -660,12 +733,12 @@ def register_shop_listener(shop_id):
         add_notification(sent_to,f"\"{sent_by}\" charged you {amount}SC for {message}")
         return "Success"
 
-    @client.request
+    @request
     @verified_request
     def extend(username, apple):
         return "IGNORE"
 
-    @client.request
+    @request
     @verified_request
     def add_shop(username, add_shop_id):
         username = username.lower()
@@ -695,10 +768,14 @@ def register_shop_listener(shop_id):
     
     @client.event
     def on_ready():
-        print(f"Request handler for project {shop_id} is running")
+        print(f"TurboWarp request handler for project {shop_id} is running")
+
+    @scratch_client.event
+    def on_ready():
+        print(f"Scratch request handler for project {shop_id} is running")
 
     client.start(thread=True) # thread=True is an optional argument. It makes the cloud requests handler run in a thread
-
+    scratch_client.start(thread=True)
 
 
 db = get_db()
